@@ -1,13 +1,17 @@
+import { useState } from "react";
 import { useApp } from "../../context/AppContext";
 import { driver, nav } from "../../data/portfolio";
+import PrivacyModal from "../PrivacyModal";
 import "./Footer.css";
 
 export default function Footer() {
   const { scrollTo } = useApp();
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const year = new Date().getFullYear();
 
   return (
     <footer className="footer">
+      <PrivacyModal open={privacyOpen} onClose={() => setPrivacyOpen(false)} />
       <div className="footer-checker" aria-hidden="true" />
 
       <div className="container footer-grid">
@@ -55,6 +59,13 @@ export default function Footer() {
           <span className="footer-built">
             BUILT WITH REACT · THREE.JS · GSAP · FRAMER MOTION — DESIGNED FOR SPEED
           </span>
+          <button
+            className="footer-link footer-privacy"
+            onClick={() => setPrivacyOpen(true)}
+            data-cursor="link"
+          >
+            PRIVACY NOTICE
+          </button>
         </div>
       </div>
     </footer>
