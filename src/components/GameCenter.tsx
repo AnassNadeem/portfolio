@@ -4,7 +4,7 @@ import { useApp } from "../context/AppContext";
 import { emit as busEmit } from "../lib/bus";
 import { getBoard, submitScore, personalBest, fmtMs, type Game, type Entry } from "../lib/leaderboard";
 import { takePending } from "../lib/podium-bridge";
-import { LEADERBOARD_ENDPOINT } from "../data/portfolio";
+import { supabaseReady } from "../lib/supabase";
 import { playShift } from "../lib/sound";
 import "./GameCenter.css";
 
@@ -15,22 +15,50 @@ const TABS: { id: Game | "ranks"; label: string }[] = [
   { id: "ranks", label: "RANKS" },
 ];
 
-/** initials + optional email — arcade style */
+/** initials + optional email opt-in — arcade style */
 function SubmitScore({ game, ms, onDone }: { game: Game; ms: number; onDone: () => void }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [emailErr, setEmailErr] = useState("");
   const [saved, setSaved] = useState(false);
+  const [alreadyIn, setAlreadyIn] = useState(false);
 
   const save = async () => {
     if (saved) return;
-    await submitScore(game, { name: name || "AAA", ms, email: email.trim() || undefined });
+
+    // Validate email only when provided
+    const trimmedEmail = email.trim();
+    if (trimmedEmail) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+        setEmailErr("INVALID EMAIL FORMAT");
+        return;
+      }
+      if (!consent) {
+        setEmailErr("TICK THE BOX TO JOIN THE GRID");
+        return;
+      }
+    }
+    setEmailErr("");
+
+    const result = await submitScore(game, {
+      name: name || "AAA",
+      ms,
+      email: trimmedEmail || undefined,
+      consent: trimmedEmail ? consent : false,
+    });
+
     setSaved(true);
-    setTimeout(onDone, 900);
+    if (result.alreadySignedUp) setAlreadyIn(true);
+    setTimeout(onDone, 1200);
   };
+
+  const showSignup = supabaseReady;
 
   return (
     <div className="gc-submit">
       <div className="gc-submit-time display">{fmtMs(ms, game)}</div>
+
       <div className="gc-submit-row">
         <label className="mono" htmlFor="gc-initials">INITIALS</label>
         <input
@@ -43,23 +71,48 @@ function SubmitScore({ game, ms, onDone }: { game: Game; ms: number; onDone: () 
           autoComplete="off"
         />
       </div>
-      <div className="gc-submit-row">
-        <label className="mono" htmlFor="gc-email">EMAIL (OPTIONAL)</label>
-        <input
-          id="gc-email"
-          type="email"
-          value={email}
-          placeholder="for the global board"
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
+
+      {showSignup && (
+        <>
+          <div className="gc-submit-row">
+            <label className="mono" htmlFor="gc-email">EMAIL — OPTIONAL</label>
+            <input
+              id="gc-email"
+              type="email"
+              value={email}
+              placeholder="join the global grid"
+              onChange={(e) => { setEmail(e.target.value); setEmailErr(""); }}
+            />
+          </div>
+
+          {email.trim() && (
+            <label className="gc-consent mono">
+              <input
+                type="checkbox"
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+              />
+              {/* Consent must be opt-in (not pre-ticked) — PECR / UK GDPR */}
+              I agree to be contacted about new projects &amp; launches
+            </label>
+          )}
+
+          {emailErr && <p className="gc-fineprint mono" style={{ color: "var(--accent)" }}>{emailErr}</p>}
+        </>
+      )}
+
+      {alreadyIn && (
+        <p className="gc-fineprint mono">ALREADY ON THE GRID — YOUR TIME STILL COUNTS.</p>
+      )}
+
       <p className="gc-fineprint mono">
-        {LEADERBOARD_ENDPOINT
-          ? "SCORES SYNC TO THE GLOBAL GRID."
-          : "STORED ON THIS DEVICE — GLOBAL GRID NOT CONFIGURED YET."}
+        {supabaseReady
+          ? "TIMES POST TO THE GLOBAL GRID. EMAIL IS OPTIONAL."
+          : "STORED ON THIS DEVICE."}
       </p>
-      <button className="btn gc-save" onClick={save} data-cursor="link">
-        <span>{saved ? "SAVED ✓" : "Post To Leaderboard"}</span>
+
+      <button className="btn gc-save" onClick={save} disabled={saved} data-cursor="link">
+        <span>{saved ? "POSTED ✓" : "Post To Leaderboard"}</span>
       </button>
     </div>
   );
