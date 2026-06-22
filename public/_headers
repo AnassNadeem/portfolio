@@ -1,0 +1,48 @@
+/*
+  # Strict-Transport-Security — 1 year HSTS, include subdomains, eligible for preload list
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+  # Prevent clickjacking
+  X-Frame-Options: DENY
+
+  # Prevent MIME-type sniffing
+  X-Content-Type-Options: nosniff
+
+  # Only send origin on cross-origin requests, full URL on same-origin
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Permissions Policy — disable everything not needed
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+
+  # Content-Security-Policy — Option B: hash-based, no unsafe-inline
+  #
+  # script-src:
+  #   'self'                                — Vite JS bundles (/assets/*.js)
+  #   https://challenges.cloudflare.com     — Cloudflare Turnstile widget script
+  #
+  # style-src:
+  #   'self'                                — Vite CSS bundles (/assets/*.css)
+  #   https://fonts.googleapis.com          — Google Fonts stylesheet
+  #   'sha256-3vKqmL/ERXHvikLwNO1AfI8y3Z7OJyl814rT6rA5s58=' — inline anti-flash <style>
+  #
+  # NOTE: <script type="application/ld+json"> is exempt from script-src (CSP spec §8.2)
+  #       — JSON data blocks are not executable and do not require a hash
+  #
+  # connect-src:
+  #   'self'                                — module fetches
+  #   https://ckgxufyrfoxkyzcctrzg.supabase.co — Supabase REST + Edge Functions
+  #   https://challenges.cloudflare.com     — Turnstile client-side requests
+  #
+  # frame-src:
+  #   https://challenges.cloudflare.com     — Turnstile renders in an iframe
+  #
+  # img-src:
+  #   'self'                                — /og.png, /favicon.svg, etc.
+  #   data:                                 — Three.js generates data: texture URIs
+  #   blob:                                 — Three.js / R3F blob objects
+  #
+  # worker-src:
+  #   blob:                                 — Three.js / Vite workers
+  #
+  # Update this hash if you change the inline <style> in index.html and rebuild.
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' https://fonts.googleapis.com 'sha256-3vKqmL/ERXHvikLwNO1AfI8y3Z7OJyl814rT6rA5s58='; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://ckgxufyrfoxkyzcctrzg.supabase.co https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; img-src 'self' data: blob:; worker-src blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
