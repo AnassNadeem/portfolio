@@ -1,3 +1,4 @@
+// @ts-nocheck — Deno runtime file; not compiled by tsc/Vite. Ignore TS2304.
 /** Called by a Supabase Database Webhook on INSERT into public.signups.
  *  Posts a Discord embed so new signups appear in the notification feed. */
 

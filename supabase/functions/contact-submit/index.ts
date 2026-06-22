@@ -1,3 +1,4 @@
+// @ts-nocheck — Deno runtime file; not compiled by tsc/Vite. Ignore TS2304.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // In-memory rate limit — resets on cold start, fine for a portfolio
