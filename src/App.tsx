@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { AppProvider } from "./context/AppContext";
 import Preloader from "./components/Preloader";
 import Cursor from "./components/Cursor";
@@ -6,8 +7,10 @@ import SpeedHUD, { RaceToasts } from "./components/SpeedHUD";
 import RaceTimer from "./components/RaceTimer";
 import RacingLine from "./components/RacingLine";
 import Marquee from "./components/Marquee";
-import GameCenter from "./components/GameCenter";
 import Podium from "./components/Podium";
+
+// Defer all arcade game code until the user opens the game center
+const GameCenter = lazy(() => import("./components/GameCenter"));
 import CommandPalette from "./components/CommandPalette";
 import HotLapTour from "./components/HotLapTour";
 import EasterEggs from "./components/EasterEggs";
@@ -29,7 +32,7 @@ export default function App() {
       <SpeedHUD />
       <RaceToasts />
       <RaceTimer />
-      <GameCenter />
+      <Suspense fallback={null}><GameCenter /></Suspense>
       <Podium />
       <CommandPalette />
       <HotLapTour />

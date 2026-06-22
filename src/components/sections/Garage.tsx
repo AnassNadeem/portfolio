@@ -4,6 +4,7 @@ import { useGSAP } from "@gsap/react";
 import { gsap } from "../../lib/gsap";
 import { useApp } from "../../context/AppContext";
 import { garageParts, driver } from "../../data/portfolio";
+import { supportsWebGL } from "../../lib/webgl";
 import "./Garage.css";
 
 const GarageScene = lazy(() => import("../three/GarageScene"));
@@ -18,16 +19,25 @@ export default function Garage() {
   const stageRef = useRef<HTMLDivElement>(null);
   const explodeRef = useRef(reduced ? 1 : 0);
   const [activePart, setActivePart] = useState<string | null>(null);
-  const [sceneActive, setSceneActive] = useState(false);
+  const [inView, setInView] = useState(false);
+  const [tabVisible, setTabVisible] = useState(!document.hidden);
+  const sceneActive = inView && tabVisible;
+  const webgl = supportsWebGL();
 
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
-    const obs = new IntersectionObserver(([e]) => setSceneActive(e.isIntersecting), {
+    const obs = new IntersectionObserver(([e]) => setInView(e.isIntersecting), {
       rootMargin: "300px 0px",
     });
     obs.observe(el);
     return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const onVis = () => setTabVisible(!document.hidden);
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
   useGSAP(
@@ -96,14 +106,33 @@ export default function Garage() {
         </div>
 
         <div className="garage-canvas">
-          <Suspense fallback={null}>
-            <GarageScene
-              active={sceneActive}
-              explodeRef={explodeRef}
-              activePart={activePart}
-              onPart={setActivePart}
-            />
-          </Suspense>
+          {webgl ? (
+            <Suspense fallback={null}>
+              <GarageScene
+                active={sceneActive}
+                explodeRef={explodeRef}
+                activePart={activePart}
+                onPart={setActivePart}
+              />
+            </Suspense>
+          ) : (
+            <div className="garage-webgl-fallback" aria-label="Skill map">
+              {garageParts.map((p) => (
+                <button
+                  key={p.id}
+                  className={`garage-label ${activePart === p.id ? "is-active" : ""}`}
+                  onClick={() => setActivePart(activePart === p.id ? null : p.id)}
+                  data-cursor="link"
+                >
+                  <span className="garage-label-dot" />
+                  <span className="garage-label-text">
+                    <strong>{p.part}</strong>
+                    <em>{p.domain}</em>
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* spec panel */}

@@ -1,11 +1,38 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, memo } from "react";
 import { useGSAP } from "@gsap/react";
 import { motion } from "framer-motion";
 import { gsap, SplitText } from "../../lib/gsap";
 import { useApp } from "../../context/AppContext";
 import { emit as busEmit } from "../../lib/bus";
 import { driver } from "../../data/portfolio";
+import { supportsWebGL } from "../../lib/webgl";
 import "./Hero.css";
+
+/** Shown when WebGL is unavailable — keeps the hero presentable on any device. */
+const HeroFallback = memo(function HeroFallback({ accent }: { accent: string }) {
+  return (
+    <div
+      className="hero-canvas-fallback"
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: `radial-gradient(ellipse 60% 50% at 40% 60%, ${accent}22 0%, transparent 70%)`,
+      }}
+    >
+      <span
+        className="display"
+        style={{ fontSize: "clamp(8rem, 28vw, 22rem)", opacity: 0.07, color: accent, lineHeight: 1 }}
+        aria-hidden="true"
+      >
+        {driver.number}
+      </span>
+    </div>
+  );
+});
 
 const HeroScene = lazy(() => import("../three/HeroScene"));
 
@@ -37,17 +64,27 @@ function MailIcon() {
 export default function Hero() {
   const { ready, reduced, accent, setAccent, liveryList, rev, scrollTo } = useApp();
   const rootRef = useRef<HTMLElement>(null);
-  const [sceneActive, setSceneActive] = useState(true);
+  const [inView, setInView] = useState(true);
+  const [tabVisible, setTabVisible] = useState(!document.hidden);
+  const sceneActive = inView && tabVisible;
+  const webgl = supportsWebGL();
 
-  // pause the 3D loop when the hero is far offscreen
+  // Pause the 3D loop when the section leaves the viewport
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
-    const obs = new IntersectionObserver(([e]) => setSceneActive(e.isIntersecting), {
+    const obs = new IntersectionObserver(([e]) => setInView(e.isIntersecting), {
       rootMargin: "120px 0px",
     });
     obs.observe(el);
     return () => obs.disconnect();
+  }, []);
+
+  // Pause the 3D loop when the tab is hidden (saves GPU on background tabs)
+  useEffect(() => {
+    const onVis = () => setTabVisible(!document.hidden);
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
   useGSAP(
@@ -98,9 +135,13 @@ export default function Hero() {
       <div className="hero-ghost display" aria-hidden="true">{driver.number}</div>
 
       <div className="hero-canvas">
-        <Suspense fallback={null}>
-          <HeroScene active={sceneActive} />
-        </Suspense>
+        {webgl ? (
+          <Suspense fallback={null}>
+            <HeroScene active={sceneActive} />
+          </Suspense>
+        ) : (
+          <HeroFallback accent={accent} />
+        )}
       </div>
 
       <div className="hero-content container">

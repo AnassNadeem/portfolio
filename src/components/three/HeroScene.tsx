@@ -71,6 +71,10 @@ export default function HeroScene({ active }: { active: boolean }) {
       frameloop={active ? "always" : "never"}
       camera={{ position: [4.6, 1.75, 6.9], fov: 34 }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+      onCreated={({ gl }) => {
+        // Request context restoration on loss rather than leaving a black canvas
+        gl.domElement.addEventListener("webglcontextlost", (e) => e.preventDefault(), false);
+      }}
     >
       <fog attach="fog" args={["#0a0a0c", 10, 26]} />
       <ambientLight intensity={0.25} />

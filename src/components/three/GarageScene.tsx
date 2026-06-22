@@ -273,6 +273,9 @@ export default function GarageScene({
       frameloop={active ? "always" : "never"}
       camera={{ position: [5.4, 2.3, 7.6], fov: 33 }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+      onCreated={({ gl }) => {
+        gl.domElement.addEventListener("webglcontextlost", (e) => e.preventDefault(), false);
+      }}
     >
       <fog attach="fog" args={["#0a0a0c", 13, 34]} />
       <ambientLight intensity={0.22} />
