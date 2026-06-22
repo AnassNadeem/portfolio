@@ -4,6 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "description": "F1-inspired software engineer portfolio — React, Three.js, GSAP, Framer Motion",
+  "engines": {
+    "node": ">=24.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -26,6 +30,6 @@
     "@types/three": "^0.180.0",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "^5.8.0",
-    "vite": "^7.1.0"
+    "vite": "^8.0.16"
   }
 }

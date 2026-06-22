@@ -23,11 +23,11 @@ export const driver = {
   available: true,
 };
 
-/** Optional backends — the site works fully without them.
- *  FORM_ENDPOINT: Formspree/Getform endpoint for real form posts.
- *  LEADERBOARD_ENDPOINT: see README → "Real leaderboard". */
-export const FORM_ENDPOINT = "";
-export const LEADERBOARD_ENDPOINT = "";
+/** Optional backends — read from Vite env vars; site works offline when blank.
+ *  VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY — for Phase 2+ Supabase integration.
+ *  VITE_LEADERBOARD_ENDPOINT — legacy fallback endpoint (replaced by Supabase in Phase 4). */
+export const FORM_ENDPOINT = import.meta.env.VITE_FORM_ENDPOINT ?? "";
+export const LEADERBOARD_ENDPOINT = import.meta.env.VITE_LEADERBOARD_ENDPOINT ?? "";
 
 export const about = {
   paragraphs: [
