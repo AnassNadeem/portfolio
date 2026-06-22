@@ -1,0 +1,95 @@
+.podium {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: grid;
+  place-items: center;
+  background: rgba(8, 8, 10, 0.82);
+  backdrop-filter: blur(10px);
+}
+
+.podium-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.podium-card {
+  position: relative;
+  width: min(560px, calc(100vw - 40px));
+  padding: 0 36px 36px;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 24px), calc(100% - 24px) 100%, 0 100%);
+}
+
+.podium-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  color: var(--text-faint);
+  font-size: 13px;
+  padding: 6px;
+  transition: color 0.2s ease;
+}
+
+.podium-close:hover {
+  color: var(--accent);
+}
+
+.podium-flag {
+  height: 26px;
+  margin: 0 -36px 26px;
+  background:
+    repeating-conic-gradient(#f5f5f7 0% 25%, #0a0a0c 0% 50%)
+    0 0 / 26px 26px;
+  opacity: 0.9;
+  animation: podium-flag 1.2s linear infinite;
+}
+
+@keyframes podium-flag {
+  to {
+    background-position: 52px 0;
+  }
+}
+
+.podium-eyebrow {
+  color: var(--text-dim);
+  font-size: 10px;
+  margin-bottom: 14px;
+}
+
+.podium-time {
+  font-size: clamp(48px, 9vw, 72px);
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.podium-pb {
+  display: inline-block;
+  color: #c77dff;
+  font-size: 11px;
+  margin-bottom: 10px;
+}
+
+.podium-gold {
+  color: #ffd320;
+  font-size: 10px;
+  margin-bottom: 10px;
+}
+
+.podium-copy {
+  color: var(--text-dim);
+  font-size: 16px;
+  max-width: 38ch;
+  margin: 8px auto 26px;
+}
+
+.podium-ctas {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}

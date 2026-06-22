@@ -1,0 +1,398 @@
+/* ════════ THE PIT WALL — mission control, ~2080 ════════ */
+
+.pitwall {
+  perspective: 1600px;
+}
+
+/* status bar */
+.pw-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 18px;
+  font-size: 9px;
+  color: var(--text-faint);
+}
+
+.pw-bar-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  background: var(--panel);
+  border: 1px solid var(--line-soft);
+  transform: skewX(var(--skew));
+}
+
+.pw-bar-cell > * {
+  transform: skewX(calc(var(--skew) * -1));
+}
+
+.pw-bar-clock {
+  margin-left: auto;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.pw-bar-leds {
+  display: flex;
+  gap: 6px;
+}
+
+.pw-bar-leds i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2bd354;
+  animation: pw-led 1.4s ease-in-out infinite;
+}
+
+.pw-bar-leds i:nth-child(2) {
+  background: #ffb000;
+  animation-delay: 0.3s;
+}
+
+.pw-bar-leds i:nth-child(3) {
+  background: var(--accent);
+  animation-delay: 0.6s;
+}
+
+@keyframes pw-led {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.pw-rec {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: inline-block;
+  animation: pw-led 1.1s ease-in-out infinite;
+}
+
+/* ── monitors ── */
+.pw-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(140% 110% at 50% 0%, rgba(var(--accent-rgb), 0.05), transparent 50%),
+    #0d0d11;
+  border: 1px solid var(--line);
+  box-shadow:
+    0 0 0 4px #08080a,
+    0 0 0 5px var(--line-soft),
+    0 24px 60px rgba(0, 0, 0, 0.5);
+  transform-origin: center center;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.pw-screen:hover {
+  border-color: rgba(var(--accent-rgb), 0.55);
+  box-shadow:
+    0 0 0 4px #08080a,
+    0 0 0 5px rgba(var(--accent-rgb), 0.35),
+    0 24px 70px rgba(0, 0, 0, 0.55),
+    0 0 50px rgba(var(--accent-rgb), 0.1);
+}
+
+/* CRT scanlines + sweeping refresh line */
+.pw-screen-scan {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.016) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+.pw-screen.is-on .pw-screen-scan::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -20%;
+  height: 14%;
+  background: linear-gradient(to bottom, transparent, rgba(var(--accent-rgb), 0.05), transparent);
+  animation: pw-sweep 5.5s linear infinite;
+}
+
+@keyframes pw-sweep {
+  to {
+    top: 110%;
+  }
+}
+
+/* power-on flicker */
+.pw-screen.is-on {
+  animation: pw-flicker 0.5s steps(2) 1;
+}
+
+@keyframes pw-flicker {
+  0% { filter: brightness(2.4); }
+  30% { filter: brightness(0.7); }
+  60% { filter: brightness(1.7); }
+  100% { filter: brightness(1); }
+}
+
+.pw-screen-head {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  font-size: 9px;
+  color: var(--text-dim);
+  background: rgba(20, 20, 26, 0.85);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.pw-feed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pw-status {
+  color: var(--accent);
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  padding: 3px 8px;
+  font-size: 8px;
+}
+
+.pw-screen-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.pw-screen--feature .pw-screen-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+}
+
+.pw-screen--feature {
+  margin-bottom: clamp(22px, 3vw, 36px);
+}
+
+.pw-screen--feature .pw-art {
+  order: 2;
+  border-left: 1px solid var(--line-soft);
+  min-height: 320px;
+}
+
+.pw-meta {
+  padding: clamp(20px, 2.6vw, 34px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.pw-top {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 9.5px;
+  color: var(--text-faint);
+  margin-bottom: 12px;
+}
+
+.pw-name {
+  font-size: clamp(24px, 3vw, 38px);
+  margin-bottom: 12px;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.pw-screen:hover .pw-name {
+  color: var(--accent);
+  text-shadow: 0 0 24px rgba(var(--accent-rgb), 0.45);
+}
+
+.pw-desc {
+  color: var(--text-dim);
+  font-size: 15px;
+  margin-bottom: 18px;
+  max-width: 54ch;
+}
+
+.pw-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.pw-links {
+  display: flex;
+  gap: 24px;
+  margin-top: auto;
+  font-size: 10.5px;
+}
+
+.pw-links a {
+  color: var(--text-dim);
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--line);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.pw-links a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* circuit display */
+.pw-art {
+  position: relative;
+  min-height: 210px;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px) 0 0 / 100% 24px,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px) 0 0 / 24px 100%,
+    #0a0a0e;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.pw-art-round {
+  position: absolute;
+  top: 2px;
+  right: 12px;
+  font-size: 74px;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(245, 245, 247, 0.08);
+  line-height: 1;
+}
+
+.pw-art-svg {
+  width: min(72%, 340px);
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+}
+
+.pw-track-base {
+  fill: none;
+  stroke: rgba(245, 245, 247, 0.15);
+  stroke-width: 7;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.pw-track-draw {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1.4s cubic-bezier(0.5, 0, 0.2, 1);
+  filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.7));
+}
+
+.pw-screen:hover .pw-track-draw,
+.pw-screen.is-on:not(:hover) .pw-track-draw {
+  stroke-dashoffset: 0;
+}
+
+.pw-track-sf {
+  fill: var(--text);
+  opacity: 0.7;
+}
+
+.pw-art-spark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  width: 100%;
+  height: 30px;
+  opacity: 0.45;
+}
+
+.pw-art-spark polyline {
+  fill: none;
+  stroke: rgba(var(--accent-rgb), 0.55);
+  stroke-width: 1.4;
+}
+
+/* live GitHub strip */
+.pw-screen-foot {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 18px;
+  padding: 9px 16px;
+  font-size: 9px;
+  color: var(--text-dim);
+  background: rgba(20, 20, 26, 0.85);
+  border-top: 1px solid var(--line-soft);
+}
+
+.pw-foot-right {
+  margin-left: auto;
+  color: var(--text-faint);
+}
+
+.pw-foot-wait {
+  color: var(--text-faint);
+  animation: pw-led 1.6s ease-in-out infinite;
+}
+
+/* the screen bank — slight inward arc like a real pit wall */
+.pw-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr));
+  gap: clamp(20px, 2.6vw, 30px);
+}
+
+.pw-tilt {
+  display: flex;
+  transition: transform 0.45s ease;
+}
+
+.pw-tilt > .pw-screen {
+  flex: 1;
+}
+
+@media (min-width: 1000px) {
+  .pw-grid .pw-tilt:nth-child(odd) {
+    transform: rotateY(2.6deg);
+  }
+  .pw-grid .pw-tilt:nth-child(even) {
+    transform: rotateY(-2.6deg);
+  }
+  .pw-grid .pw-tilt:hover {
+    transform: rotateY(0deg) translateY(-4px);
+  }
+}
+
+@media (max-width: 880px) {
+  .pw-screen--feature .pw-screen-body {
+    grid-template-columns: 1fr;
+  }
+  .pw-screen--feature .pw-art {
+    order: 0;
+    border-left: 0;
+    min-height: 220px;
+  }
+  .pw-bar {
+    flex-wrap: wrap;
+  }
+  .pw-bar-clock {
+    margin-left: 0;
+  }
+}

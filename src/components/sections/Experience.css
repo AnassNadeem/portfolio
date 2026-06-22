@@ -1,0 +1,174 @@
+.xp-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(48px, 6vw, 80px);
+  padding-block: 20px;
+}
+
+/* the central "road": two edges + dashed centre line */
+.xp-road {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 34px;
+  transform: translateX(-50%);
+  background: var(--panel);
+  border-left: 2px solid var(--line);
+  border-right: 2px solid var(--line);
+}
+
+.xp-road::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  transform: translateX(-50%);
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(245, 245, 247, 0.28) 0 14px,
+    transparent 14px 30px
+  );
+}
+
+.xp-road-progress {
+  position: absolute;
+  inset: 0;
+  transform-origin: top center;
+  background: linear-gradient(to bottom, rgba(var(--accent-rgb), 0.16), rgba(var(--accent-rgb), 0.3));
+  border-left: 2px solid var(--accent);
+  border-right: 2px solid var(--accent);
+  margin: 0 -2px;
+}
+
+.xp-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(50px, 7vw, 110px);
+}
+
+.xp-badge {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  font-size: 17px;
+  color: var(--on-accent);
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 5px var(--bg), 0 0 26px rgba(var(--accent-rgb), 0.45);
+}
+
+.xp-item--right .xp-card {
+  grid-column: 2;
+}
+
+.xp-item--left .xp-card {
+  grid-column: 1;
+  justify-self: end;
+  text-align: left;
+}
+
+.xp-card {
+  position: relative;
+  max-width: 480px;
+  padding: 26px 28px 28px;
+  background: var(--panel);
+  border: 1px solid var(--line-soft);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.xp-card:hover {
+  border-color: rgba(var(--accent-rgb), 0.45);
+  transform: translateY(-4px);
+}
+
+.xp-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 10px;
+}
+
+.xp-season {
+  color: var(--accent);
+}
+
+.xp-type {
+  color: var(--text-faint);
+}
+
+.xp-role {
+  font-size: clamp(20px, 2.4vw, 26px);
+  margin-bottom: 6px;
+}
+
+.xp-company {
+  color: var(--text-dim);
+  font-size: 11px;
+  margin-bottom: 16px;
+}
+
+.xp-points {
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.xp-points li {
+  position: relative;
+  padding-left: 20px;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.xp-points li::before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+
+.xp-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 860px) {
+  .xp-road {
+    left: 17px;
+    transform: none;
+  }
+  .xp-item {
+    grid-template-columns: 1fr;
+  }
+  .xp-badge {
+    left: 17px;
+    width: 44px;
+    height: 44px;
+    font-size: 14px;
+  }
+  .xp-item--right .xp-card,
+  .xp-item--left .xp-card {
+    grid-column: 1;
+    justify-self: stretch;
+    max-width: none;
+    margin-left: 62px;
+  }
+}

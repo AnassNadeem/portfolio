@@ -1,0 +1,204 @@
+.garage {
+  padding-block: 0;
+}
+
+.garage-stage {
+  position: relative;
+  height: 100vh;
+  min-height: 640px;
+  overflow: hidden;
+}
+
+.garage-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.garage-head {
+  position: absolute;
+  top: calc(var(--nav-h) + 22px);
+  left: clamp(20px, 5vw, 72px);
+  z-index: 2; /* compact heading, top-left — clear of the centered turntable */
+  max-width: 420px;
+  pointer-events: none;
+}
+
+.garage-head .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+}
+
+.garage-head .slash {
+  width: 26px;
+  height: 12px;
+  background: var(--accent);
+  transform: skewX(var(--skew));
+}
+
+.garage-title {
+  font-size: clamp(34px, 4.6vw, 58px);
+  margin-bottom: 12px;
+}
+
+.garage-sub {
+  color: var(--text-dim);
+  font-size: 16px;
+  max-width: 40ch;
+}
+
+/* ── floating part labels (drei Html) ── */
+.garage-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px 7px 8px;
+  background: rgba(12, 12, 16, 0.82);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(6px);
+  white-space: nowrap;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+}
+
+.garage-label:hover,
+.garage-label.is-active {
+  border-color: rgba(var(--accent-rgb), 0.7);
+  background: rgba(var(--accent-rgb), 0.12);
+}
+
+.garage-label-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 9px rgba(var(--accent-rgb), 0.9);
+  flex-shrink: 0;
+}
+
+.garage-label-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.25;
+}
+
+.garage-label-text strong {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: var(--text);
+}
+
+.garage-label-text em {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+/* ── spec panel ── */
+.garage-panel {
+  position: absolute;
+  right: clamp(18px, 4vw, 64px);
+  bottom: clamp(60px, 9vh, 110px);
+  z-index: 2;
+  width: min(360px, calc(100vw - 36px));
+  padding: 20px 22px 22px;
+  background: rgba(14, 14, 18, 0.82);
+  border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--accent);
+  backdrop-filter: blur(12px);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+}
+
+.garage-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  color: var(--text-faint);
+  margin-bottom: 14px;
+}
+
+.garage-panel-live {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2bd354;
+  box-shadow: 0 0 8px rgba(43, 211, 84, 0.9);
+  animation: garage-live 1.3s ease-in-out infinite;
+}
+
+@keyframes garage-live {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.garage-part {
+  font-size: 26px;
+  margin-bottom: 6px;
+}
+
+.garage-domain {
+  font-size: 9.5px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+.garage-desc {
+  color: var(--text-dim);
+  font-size: 14.5px;
+  margin-bottom: 16px;
+}
+
+.garage-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.garage-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 2;
+  font-size: 9px;
+  color: var(--text-faint);
+  letter-spacing: 0.2em;
+}
+
+@media (max-width: 860px) {
+  .garage-stage {
+    height: auto;
+    min-height: 0;
+    padding-bottom: 24px;
+  }
+  .garage-canvas {
+    position: relative;
+    height: 56vh;
+    min-height: 380px;
+  }
+  .garage-head {
+    position: relative;
+    top: 0;
+    left: 0;
+    padding: 70px clamp(20px, 6vw, 40px) 8px;
+  }
+  .garage-panel {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    width: auto;
+    margin: 14px clamp(20px, 6vw, 40px) 0;
+  }
+  .garage-hint {
+    display: none;
+  }
+}

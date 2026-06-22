@@ -1,0 +1,129 @@
+.cp-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 4500;
+  background: rgba(8, 8, 10, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  padding: 14vh 20px 20px;
+}
+
+.cp {
+  width: min(560px, 100%);
+  height: fit-content;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+}
+
+.cp-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.cp-wheel {
+  color: var(--accent);
+  font-size: 18px;
+  animation: cp-spin 6s linear infinite;
+}
+
+@keyframes cp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cp-input {
+  flex: 1;
+  background: none;
+  border: 0;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 16px;
+}
+
+.cp-input:focus {
+  outline: none;
+}
+
+.cp-input::placeholder {
+  color: var(--text-faint);
+}
+
+.cp-kbd {
+  font-size: 9px;
+  color: var(--text-faint);
+  border: 1px solid var(--line);
+  padding: 3px 7px;
+}
+
+.cp-list {
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.cp-group {
+  font-size: 8.5px;
+  color: var(--text-faint);
+  padding: 12px 12px 6px;
+}
+
+.cp-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 11px 12px;
+  color: var(--text-dim);
+  font-size: 14.5px;
+  border-left: 2px solid transparent;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.cp-item.is-active {
+  background: rgba(var(--accent-rgb), 0.09);
+  color: var(--text);
+  border-left-color: var(--accent);
+}
+
+.cp-swatch {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(245, 245, 247, 0.15);
+  flex-shrink: 0;
+}
+
+.cp-label {
+  flex: 1;
+}
+
+.cp-hint {
+  font-size: 8.5px;
+  color: var(--text-faint);
+}
+
+.cp-empty {
+  padding: 26px;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 10px;
+}
+
+.cp-foot {
+  display: flex;
+  gap: 20px;
+  padding: 12px 18px;
+  font-size: 8.5px;
+  color: var(--text-faint);
+  border-top: 1px solid var(--line-soft);
+}

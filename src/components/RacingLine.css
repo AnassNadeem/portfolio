@@ -1,0 +1,107 @@
+.racing-line {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.rl-svg {
+  display: block;
+}
+
+.rl-guide {
+  stroke: rgba(245, 245, 247, 0.13);
+  stroke-width: 1.5;
+  stroke-dasharray: 7 9;
+}
+
+/* twin tire marks: wide accent stroke + bg-colored core = two parallel lines */
+.rl-trail-outer {
+  stroke: var(--accent);
+  stroke-width: 15;
+  opacity: 0.8;
+  filter: drop-shadow(0 0 7px rgba(var(--accent-rgb), 0.55));
+}
+
+.rl-trail-inner {
+  stroke: var(--bg);
+  stroke-width: 8;
+}
+
+.rl-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  fill: rgba(245, 245, 247, 0.28);
+}
+
+.rl-car {
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.65));
+}
+
+.rl-body {
+  fill: var(--accent);
+}
+
+.rl-tyre {
+  fill: #131316;
+  stroke: #303038;
+  stroke-width: 1;
+}
+
+.rl-dark {
+  fill: #1d1d23;
+}
+
+.rl-streaks line {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(var(--accent-rgb), 0.8));
+}
+
+/* ghost of your best lap */
+.rl-ghost {
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.rl-ghost-body {
+  fill: none;
+  stroke: rgba(245, 245, 247, 0.5);
+  stroke-width: 1.4;
+  stroke-dasharray: 4 3;
+}
+
+.rl-ghost-part {
+  fill: none;
+  stroke: rgba(245, 245, 247, 0.32);
+  stroke-width: 1.2;
+}
+
+.rl-ghost-tag {
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  letter-spacing: 0.2em;
+  fill: rgba(245, 245, 247, 0.4);
+}
+
+/* DRS flap pops open in the zone at speed */
+.rl-drs {
+  fill: var(--accent);
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.rl-car.drs-open .rl-drs {
+  opacity: 1;
+  transform: translateX(-3px);
+  filter: drop-shadow(0 0 5px rgba(var(--accent-rgb), 0.9));
+}
+
+@media (max-width: 767px) {
+  .racing-line {
+    display: none;
+  }
+}

@@ -1,0 +1,240 @@
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: var(--nav-h);
+  transition: background 0.35s ease, border-color 0.35s ease, backdrop-filter 0.35s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.nav--solid {
+  background: rgba(10, 10, 12, 0.72);
+  backdrop-filter: blur(14px);
+  border-bottom-color: var(--line-soft);
+}
+
+.nav-inner {
+  height: 100%;
+  width: min(1340px, 100% - 48px);
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+/* logo = race number plate */
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-logo-plate {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 30px;
+  background: var(--accent);
+  transform: skewX(var(--skew));
+  transition: background 0.25s ease;
+}
+
+.nav-logo-num {
+  font-weight: 900;
+  font-style: italic;
+  font-size: 16px;
+  color: var(--on-accent);
+  transform: skewX(calc(var(--skew) * -1));
+}
+
+.nav-logo-name {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+}
+
+.nav-logo-name em {
+  font-style: italic;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.nav-links {
+  display: flex;
+  gap: 6px;
+}
+
+.nav-link {
+  position: relative;
+  padding: 10px 14px;
+  color: var(--text-dim);
+  transition: color 0.2s ease;
+}
+
+.nav-link-idx {
+  color: var(--accent);
+  margin-right: 6px;
+  font-size: 9px;
+  vertical-align: 2px;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 4px;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0) skewX(var(--skew));
+  transform-origin: left;
+  transition: transform 0.25s ease;
+}
+
+.nav-link:hover,
+.nav-link.is-active {
+  color: var(--text);
+}
+
+.nav-link.is-active::after,
+.nav-link:hover::after {
+  transform: scaleX(1) skewX(var(--skew));
+}
+
+.nav-cta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-resume {
+  padding: 10px 20px;
+  font-size: 12px;
+}
+
+.nav-arcade {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  color: var(--text-dim);
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  transform: skewX(var(--skew));
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.nav-arcade:hover {
+  color: var(--text);
+  border-color: rgba(var(--accent-rgb), 0.6);
+}
+
+.nav-arcade-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2bd354;
+  box-shadow: 0 0 8px rgba(43, 211, 84, 0.9);
+  animation: hint-pulse 1.6s ease-in-out infinite;
+}
+
+/* burger */
+.nav-burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+}
+
+.nav-burger span {
+  display: block;
+  height: 2px;
+  background: var(--text);
+  transition: transform 0.3s ease, width 0.3s ease;
+}
+
+.nav-burger span:last-child {
+  width: 70%;
+  align-self: flex-end;
+}
+
+.nav-burger.is-open span:first-child {
+  transform: translateY(4.5px) rotate(45deg);
+}
+
+.nav-burger.is-open span:last-child {
+  width: 100%;
+  transform: translateY(-4.5px) rotate(-45deg);
+}
+
+/* mobile overlay */
+.nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 990;
+  background: rgba(10, 10, 12, 0.97);
+  backdrop-filter: blur(20px);
+}
+
+.nav-overlay-inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 96px clamp(28px, 8vw, 64px) 48px;
+}
+
+.nav-overlay-link {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  font-size: clamp(38px, 9vw, 64px);
+  text-align: left;
+  color: var(--text);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.nav-overlay-link .mono {
+  color: var(--accent);
+  font-size: 13px;
+}
+
+.nav-overlay-link:hover {
+  color: var(--accent);
+  transform: translateX(10px);
+}
+
+.nav-overlay-foot {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  color: var(--text-dim);
+}
+
+.nav-overlay-foot a {
+  margin-right: 18px;
+  transition: color 0.2s ease;
+}
+
+.nav-overlay-foot a:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 920px) {
+  .nav-links,
+  .nav-resume {
+    display: none;
+  }
+  .nav-burger {
+    display: flex;
+  }
+}

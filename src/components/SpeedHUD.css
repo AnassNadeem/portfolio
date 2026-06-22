@@ -1,0 +1,197 @@
+.hud {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  background: rgba(14, 14, 18, 0.72);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--accent);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+  transition: opacity 0.5s ease;
+}
+
+/* ── compact gauge ── */
+.hud-gauge {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  flex-shrink: 0;
+}
+
+.hud-gauge svg {
+  width: 100%;
+  height: 100%;
+}
+
+.hud-tick {
+  stroke: #3a3a44;
+  stroke-width: 2;
+}
+
+.hud-tick--red {
+  stroke: var(--accent);
+}
+
+.hud-needle {
+  stroke: var(--accent);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 3px rgba(var(--accent-rgb), 0.8));
+}
+
+.hud-hub {
+  fill: #1c1c22;
+  stroke: var(--accent);
+  stroke-width: 1.4;
+}
+
+.hud-gear-val {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+  pointer-events: none;
+}
+
+.hud-readout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1;
+  min-width: 42px;
+}
+
+.hud-speed-val {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.hud-unit {
+  font-size: 7px;
+  color: var(--text-faint);
+  margin-top: 3px;
+}
+
+/* ── minimap ── */
+.hud-map {
+  width: 44px;
+  height: 64px;
+  background: var(--bg-2);
+  border: 1px solid var(--line-soft);
+  flex-shrink: 0;
+}
+
+.hud-map-base {
+  fill: none;
+  stroke: #2e2e37;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+
+.hud-map-fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 2.5px rgba(var(--accent-rgb), 0.7));
+}
+
+.hud-map-dot {
+  fill: #f5f5f7;
+  stroke: var(--accent);
+  stroke-width: 1.2;
+}
+
+/* ── action buttons ── */
+.hud-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hud-btn {
+  font-size: 7.5px;
+  color: var(--text-faint);
+  border: 1px solid var(--line);
+  padding: 4px 7px;
+  text-align: center;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.hud-btn:hover {
+  color: var(--text);
+  border-color: rgba(var(--accent-rgb), 0.5);
+}
+
+.hud-btn.is-on {
+  color: var(--accent);
+  border-color: rgba(var(--accent-rgb), 0.5);
+}
+
+.hud-btn--arcade {
+  color: #2bd354;
+  border-color: rgba(43, 211, 84, 0.35);
+}
+
+.hud-btn--arcade:hover {
+  color: #2bd354;
+  border-color: rgba(43, 211, 84, 0.7);
+}
+
+/* ── race-control toasts ── */
+.race-toasts {
+  position: fixed;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 950;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.race-toast {
+  padding: 9px 18px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  background: rgba(14, 14, 18, 0.88);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(10px);
+  color: var(--text);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+}
+
+.race-toast--accent {
+  border-color: rgba(var(--accent-rgb), 0.6);
+  color: var(--accent);
+}
+
+.race-toast--green {
+  border-color: rgba(43, 211, 84, 0.6);
+  color: #2bd354;
+}
+
+.race-toast--purple {
+  border-color: rgba(190, 100, 255, 0.65);
+  color: #c77dff;
+}
+
+@media (max-width: 760px) {
+  .hud {
+    display: none;
+  }
+}
