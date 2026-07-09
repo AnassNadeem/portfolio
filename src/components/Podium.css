@@ -8,10 +8,28 @@
   backdrop-filter: blur(10px);
 }
 
-.podium-confetti {
+.podium-sweep {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  background: repeating-conic-gradient(#f5f5f7 0% 25%, #0a0a0c 0% 50%) 0 0 / 40px 40px;
+  animation: podium-sweep 1.2s ease-out forwards;
+  mask-image: linear-gradient(90deg, transparent, black 20%, black 80%, transparent);
+  opacity: 0.35;
+}
+
+@keyframes podium-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+.podium-light-leak {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 40% 30% at 0% 50%, rgba(var(--accent-rgb), 0.15), transparent 70%),
+    radial-gradient(ellipse 40% 30% at 100% 50%, rgba(var(--accent-rgb), 0.12), transparent 70%);
 }
 
 .podium-card {
@@ -46,13 +64,6 @@
     repeating-conic-gradient(#f5f5f7 0% 25%, #0a0a0c 0% 50%)
     0 0 / 26px 26px;
   opacity: 0.9;
-  animation: podium-flag 1.2s linear infinite;
-}
-
-@keyframes podium-flag {
-  to {
-    background-position: 52px 0;
-  }
 }
 
 .podium-eyebrow {

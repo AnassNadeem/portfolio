@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock Supabase so tests run offline
+// Mock Supabase so tests run offline (forces the in-memory / session path)
 vi.mock("../lib/supabase", () => ({
   supabase: {
     from: () => ({
@@ -14,69 +14,98 @@ vi.mock("../lib/supabase", () => ({
   supabaseReady: false,
 }));
 
-// Reset localStorage between tests
-beforeEach(() => localStorage.clear());
+// Reset the in-memory session store between tests
+beforeEach(async () => {
+  const { resetSessionScores } = await import("../lib/leaderboard");
+  resetSessionScores();
+});
+
+/** Helper: find the player's own row on the offline board. */
+async function youRow(game: "reaction" | "pitstop" | "hotlap") {
+  const { getBoard } = await import("../lib/leaderboard");
+  const board = await getBoard(game);
+  return board.find((e) => e.you);
+}
 
 describe("submitScore sanitisation", () => {
   it("upcases and trims player name to 3 chars", async () => {
     const { submitScore } = await import("../lib/leaderboard");
     await submitScore("reaction", { name: "alice", ms: 250 });
-    const saved = JSON.parse(localStorage.getItem("apex_lb_reaction") ?? "[]");
-    expect(saved[0].name).toBe("ALI");
+    expect((await youRow("reaction"))?.name).toBe("ALI");
   });
 
   it("strips non-alphanumeric characters from name", async () => {
     const { submitScore } = await import("../lib/leaderboard");
     await submitScore("reaction", { name: "a!b@c#", ms: 250 });
-    const saved = JSON.parse(localStorage.getItem("apex_lb_reaction") ?? "[]");
-    expect(saved[0].name).toBe("ABC");
+    expect((await youRow("reaction"))?.name).toBe("ABC");
   });
 
   it("pads short names with middle-dot", async () => {
     const { submitScore } = await import("../lib/leaderboard");
     await submitScore("reaction", { name: "x", ms: 300 });
-    const saved = JSON.parse(localStorage.getItem("apex_lb_reaction") ?? "[]");
-    expect(saved[0].name).toBe("X··");
+    expect((await youRow("reaction"))?.name).toBe("X··");
   });
 
   it("clamps ms below 0 to 0", async () => {
-    const { submitScore } = await import("../lib/leaderboard");
+    const { submitScore, personalBest } = await import("../lib/leaderboard");
     await submitScore("hotlap", { name: "ABC", ms: -100 });
-    const saved = JSON.parse(localStorage.getItem("apex_lb_hotlap") ?? "[]");
-    expect(saved[0].ms).toBe(0);
+    expect(personalBest("hotlap")).toBe(0);
   });
 
   it("clamps ms above 600000 to 600000", async () => {
-    const { submitScore } = await import("../lib/leaderboard");
+    const { submitScore, personalBest } = await import("../lib/leaderboard");
     await submitScore("pitstop", { name: "ABC", ms: 999999 });
-    const saved = JSON.parse(localStorage.getItem("apex_lb_pitstop") ?? "[]");
-    expect(saved[0].ms).toBe(600000);
+    expect(personalBest("pitstop")).toBe(600000);
   });
 
-  it("always marks local entry as yours", async () => {
+  it("marks the player's session entry as theirs", async () => {
     const { submitScore } = await import("../lib/leaderboard");
     await submitScore("reaction", { name: "YOU", ms: 200 });
-    const saved = JSON.parse(localStorage.getItem("apex_lb_reaction") ?? "[]");
-    expect(saved[0].you).toBe(true);
+    expect((await youRow("reaction"))?.you).toBe(true);
+  });
+});
+
+describe("two-tier storage", () => {
+  it("keeps only the BEST time per session, not every attempt", async () => {
+    const { submitScore, personalBest } = await import("../lib/leaderboard");
+    await submitScore("reaction", { name: "YOU", ms: 300 });
+    await submitScore("reaction", { name: "YOU", ms: 210 });
+    await submitScore("reaction", { name: "YOU", ms: 250 }); // slower — ignored
+    expect(personalBest("reaction")).toBe(210);
+  });
+
+  it("does not persist a no-email score permanently", async () => {
+    const { submitScore } = await import("../lib/leaderboard");
+    const res = await submitScore("reaction", { name: "YOU", ms: 200 });
+    expect(res.savedPermanently).toBe(false);
+  });
+
+  it("collapses duplicate names to a single board row (best time wins)", async () => {
+    const { submitScore, getBoard } = await import("../lib/leaderboard");
+    await submitScore("reaction", { name: "TTT", ms: 337 });
+    await submitScore("reaction", { name: "TTT", ms: 337 }); // duplicate
+    const board = await getBoard("reaction");
+    expect(board.filter((e) => e.name === "TTT")).toHaveLength(1);
   });
 });
 
 describe("personalBest", () => {
-  it("returns null when no local entries exist", async () => {
+  it("returns null when no session entry exists", async () => {
     const { personalBest } = await import("../lib/leaderboard");
     expect(personalBest("reaction")).toBeNull();
   });
 
-  it("returns the minimum ms from local your-entries", async () => {
-    localStorage.setItem(
-      "apex_lb_reaction",
-      JSON.stringify([
-        { name: "YOU", ms: 300, you: true },
-        { name: "YOU", ms: 200, you: true },
-        { name: "BOT", ms: 100, you: false },
-      ])
-    );
-    const { personalBest } = await import("../lib/leaderboard");
+  it("returns the fastest ms set this session", async () => {
+    const { submitScore, personalBest } = await import("../lib/leaderboard");
+    await submitScore("reaction", { name: "YOU", ms: 300 });
+    await submitScore("reaction", { name: "YOU", ms: 200 });
     expect(personalBest("reaction")).toBe(200);
+  });
+
+  it("is cleared by resetSessionScores (mirrors a page reload)", async () => {
+    const { submitScore, personalBest, resetSessionScores } = await import("../lib/leaderboard");
+    await submitScore("reaction", { name: "YOU", ms: 200 });
+    resetSessionScores();
+    expect(personalBest("reaction")).toBeNull();
   });
 });

@@ -6,12 +6,14 @@ import { getBoard, submitScore, personalBest, fmtMs, type Game, type Entry } fro
 import { takePending } from "../lib/podium-bridge";
 import { supabaseReady } from "../lib/supabase";
 import { playShift } from "../lib/sound";
+import GridRunGame from "./games/GridRunGame";
 import "./GameCenter.css";
 
 const TABS: { id: Game | "ranks"; label: string }[] = [
   { id: "reaction", label: "LIGHTS OUT" },
   { id: "pitstop", label: "PIT STOP" },
   { id: "hotlap", label: "HOT LAP" },
+  { id: "gridrun", label: "GRID RUN" },
   { id: "ranks", label: "RANKS" },
 ];
 
@@ -22,10 +24,14 @@ function SubmitScore({ game, ms, onDone }: { game: Game; ms: number; onDone: () 
   const [consent, setConsent] = useState(false);
   const [emailErr, setEmailErr] = useState("");
   const [saved, setSaved] = useState(false);
+  const [savedPermanently, setSavedPermanently] = useState(false);
   const [alreadyIn, setAlreadyIn] = useState(false);
+  // Guard against double-submit: setState is async, so a fast double-click can
+  // slip two inserts through before `saved` flips. A ref blocks synchronously.
+  const submitting = useRef(false);
 
   const save = async () => {
-    if (saved) return;
+    if (saved || submitting.current) return;
 
     // Validate email only when provided
     const trimmedEmail = email.trim();
@@ -40,6 +46,7 @@ function SubmitScore({ game, ms, onDone }: { game: Game; ms: number; onDone: () 
       }
     }
     setEmailErr("");
+    submitting.current = true;
 
     const result = await submitScore(game, {
       name: name || "AAA",
@@ -49,11 +56,13 @@ function SubmitScore({ game, ms, onDone }: { game: Game; ms: number; onDone: () 
     });
 
     setSaved(true);
+    setSavedPermanently(Boolean(result.savedPermanently));
     if (result.alreadySignedUp) setAlreadyIn(true);
-    setTimeout(onDone, 1200);
+    setTimeout(onDone, 1400);
   };
 
   const showSignup = supabaseReady;
+  const hasEmail = email.trim().length > 0;
 
   return (
     <div className="gc-submit">
@@ -105,14 +114,27 @@ function SubmitScore({ game, ms, onDone }: { game: Game; ms: number; onDone: () 
         <p className="gc-fineprint mono">ALREADY ON THE GRID — YOUR TIME STILL COUNTS.</p>
       )}
 
-      <p className="gc-fineprint mono">
-        {supabaseReady
-          ? "TIMES POST TO THE GLOBAL GRID. EMAIL IS OPTIONAL."
-          : "STORED ON THIS DEVICE."}
-      </p>
+      {/* Two-tier storage, spelled out so the choice is clear */}
+      {showSignup ? (
+        saved ? (
+          <p className="gc-fineprint mono" style={savedPermanently ? { color: "var(--accent)" } : undefined}>
+            {savedPermanently
+              ? "✓ SAVED PERMANENTLY TO THE GLOBAL GRID."
+              : "✓ RANKED FOR THIS SESSION — ADD EMAIL NEXT TIME TO SAVE IT FOR GOOD."}
+          </p>
+        ) : (
+          <p className="gc-fineprint mono">
+            {hasEmail
+              ? "WITH EMAIL — YOUR TIME IS SAVED PERMANENTLY TO THE GLOBAL GRID."
+              : "NO EMAIL — YOUR TIME RANKS THIS SESSION ONLY, CLEARED ON REFRESH."}
+          </p>
+        )
+      ) : (
+        <p className="gc-fineprint mono">RANKED THIS SESSION ONLY — CLEARED ON REFRESH.</p>
+      )}
 
       <button className="btn gc-save" onClick={save} disabled={saved} data-cursor="link">
-        <span>{saved ? "POSTED ✓" : "Post To Leaderboard"}</span>
+        <span>{saved ? "POSTED ✓" : hasEmail ? "Save To Global Grid" : "Post Session Time"}</span>
       </button>
     </div>
   );
@@ -315,9 +337,9 @@ function Ranks() {
   return (
     <div className="gc-game">
       <div className="gc-rank-tabs">
-        {(["reaction", "pitstop", "hotlap"] as Game[]).map((g) => (
+        {(["reaction", "pitstop", "hotlap", "gridrun"] as Game[]).map((g) => (
           <button key={g} className={`gc-rank-tab mono ${game === g ? "is-active" : ""}`} onClick={() => setGame(g)} data-cursor="link">
-            {g === "reaction" ? "LIGHTS OUT" : g === "pitstop" ? "PIT STOP" : "HOT LAP"}
+            {g === "reaction" ? "LIGHTS OUT" : g === "pitstop" ? "PIT STOP" : g === "hotlap" ? "HOT LAP" : "GRID RUN"}
           </button>
         ))}
       </div>
@@ -348,6 +370,11 @@ function Ranks() {
           )}
         </tbody>
       </table>
+      <p className="gc-fineprint mono">
+        {supabaseReady
+          ? "YOUR TIME RANKS THIS SESSION ONLY — ADD AN EMAIL WHEN POSTING TO SAVE IT TO THE GLOBAL GRID."
+          : "TIMES RANK THIS SESSION ONLY — CLEARED ON REFRESH."}
+      </p>
     </div>
   );
 }
@@ -426,6 +453,7 @@ export default function GameCenter() {
               {tab === "reaction" && <ReactionGame soundOn={soundOn} />}
               {tab === "pitstop" && <PitStopGame soundOn={soundOn} />}
               {tab === "hotlap" && <HotLapGame close={close} pendingMs={pendingMs} />}
+              {tab === "gridrun" && <GridRunGame soundOn={soundOn} />}
               {tab === "ranks" && <Ranks />}
             </div>
           </motion.div>
