@@ -1,13 +1,15 @@
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows, Environment, Grid, Html, Lightformer } from "@react-three/drei";
+import { ContactShadows, Environment, Grid, Html, Lightformer, OrbitControls } from "@react-three/drei";
 import { useApp } from "../../context/AppContext";
 import { garageParts, driver } from "../../data/portfolio";
 import F1Car from "./F1Car";
+import GarageParticles from "./GarageParticles";
 
-function CameraRig() {
+function CameraRig({ manual }: { manual: boolean }) {
   useFrame(({ camera, pointer }) => {
+    if (manual) return;
     camera.position.x += (5.4 + pointer.x * 1.0 - camera.position.x) * 0.045;
     camera.position.y += (2.3 - pointer.y * 0.55 - camera.position.y) * 0.045;
     camera.position.z += (7.6 - camera.position.z) * 0.045;
@@ -69,15 +71,17 @@ function Turntable({
   activePart,
   onPart,
   accent,
+  autoSpin,
 }: {
   explodeRef: React.RefObject<number>;
   activePart: string | null;
   onPart: (id: string | null) => void;
   accent: string;
+  autoSpin: boolean;
 }) {
   const ref = useRef<THREE.Group>(null);
   useFrame((_, dt) => {
-    if (ref.current) ref.current.rotation.y += Math.min(dt, 0.05) * 0.22;
+    if (autoSpin && ref.current) ref.current.rotation.y += Math.min(dt, 0.05) * 0.22;
   });
 
   return (
@@ -259,11 +263,15 @@ export default function GarageScene({
   explodeRef,
   activePart,
   onPart,
+  autoSpin,
+  manualOrbit,
 }: {
   active: boolean;
   explodeRef: React.RefObject<number>;
   activePart: string | null;
   onPart: (id: string | null) => void;
+  autoSpin: boolean;
+  manualOrbit: boolean;
 }) {
   const { accent } = useApp();
 
@@ -277,13 +285,14 @@ export default function GarageScene({
         gl.domElement.addEventListener("webglcontextlost", (e) => e.preventDefault(), false);
       }}
     >
-      <fog attach="fog" args={["#0a0a0c", 13, 34]} />
+      <fog attach="fog" args={["#0a0a0c", 11, 30]} />
       <ambientLight intensity={0.22} />
       <directionalLight position={[4, 7, 3]} intensity={1.1} />
       <pointLight position={[-7, 3, -3]} intensity={2.4} color={accent} decay={0} />
       <pointLight position={[6, 2, 5]} intensity={0.5} color="#7d9bff" decay={0} />
 
       <Suspense fallback={null}>
+        <Environment preset="warehouse" background={false} blur={0.8} />
         <Environment resolution={256}>
           <Lightformer intensity={2.0} position={[0, 5, 0]} rotation={[-Math.PI / 2, 0, 0]} scale={[10, 3, 1]} form="rect" />
           <Lightformer intensity={0.8} position={[-6, 2, 3]} rotation={[0, Math.PI / 3, 0]} scale={[4, 1.2, 1]} form="rect" />
@@ -291,7 +300,8 @@ export default function GarageScene({
         </Environment>
 
         {/* the rotating exhibit */}
-        <Turntable explodeRef={explodeRef} activePart={activePart} onPart={onPart} accent={accent} />
+        <Turntable explodeRef={explodeRef} activePart={activePart} onPart={onPart} accent={accent} autoSpin={autoSpin} />
+        <GarageParticles accent={accent} />
 
         {/* the room */}
         <GarageWalls accent={accent} />
@@ -321,7 +331,19 @@ export default function GarageScene({
         <ContactShadows position={[0, 0.005, 0]} opacity={0.6} scale={14} blur={2.6} far={2.4} resolution={512} />
       </Suspense>
 
-      <CameraRig />
+      {manualOrbit && (
+        <OrbitControls
+          enableZoom={false}
+          enablePan={false}
+          minPolarAngle={Math.PI * 0.22}
+          maxPolarAngle={Math.PI * 0.48}
+          target={[0, 0.72, 0]}
+          rotateSpeed={0.55}
+          dampingFactor={0.08}
+          enableDamping
+        />
+      )}
+      <CameraRig manual={manualOrbit} />
     </Canvas>
   );
 }

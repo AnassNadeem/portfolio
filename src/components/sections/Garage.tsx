@@ -19,6 +19,9 @@ export default function Garage() {
   const stageRef = useRef<HTMLDivElement>(null);
   const explodeRef = useRef(reduced ? 1 : 0);
   const [activePart, setActivePart] = useState<string | null>(null);
+  const [autoSpin, setAutoSpin] = useState(false);
+  const [manualOrbit, setManualOrbit] = useState(true);
+  const doorRef = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   const [tabVisible, setTabVisible] = useState(!document.hidden);
   const sceneActive = inView && tabVisible;
@@ -47,25 +50,24 @@ export default function Garage() {
 
       // desktop: pin the stage and scrub the explosion
       mm.add("(min-width: 861px)", () => {
-        gsap.fromTo(
-          explodeRef,
-          { current: 0 },
-          {
-            current: 1,
-            ease: "none",
-            scrollTrigger: {
-              trigger: stageRef.current,
-              start: "top top",
-              end: "+=160%",
-              scrub: 0.5,
-              pin: true,
-              anticipatePin: 1,
-            },
-          }
-        );
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: stageRef.current,
+            start: "top top",
+            end: "+=280%",
+            scrub: 1.2,
+            pin: true,
+            anticipatePin: 1,
+          },
+        });
+        tl.fromTo(explodeRef, { current: 0 }, { current: 1, ease: "none", duration: 0.65 });
+        tl.to(explodeRef, { current: 1, duration: 0.35 });
+        if (doorRef.current) {
+          tl.fromTo(doorRef.current, { scaleY: 1 }, { scaleY: 0, ease: "power2.inOut", duration: 0.25 }, 0);
+          tl.to(doorRef.current, { scaleY: 1, ease: "power2.inOut", duration: 0.25 }, 0.75);
+        }
       });
 
-      // mobile: no pin — explode while the section crosses the viewport
       mm.add("(max-width: 860px)", () => {
         gsap.fromTo(
           explodeRef,
@@ -76,8 +78,8 @@ export default function Garage() {
             scrollTrigger: {
               trigger: stageRef.current,
               start: "top 70%",
-              end: "bottom 45%",
-              scrub: 0.5,
+              end: "+=200%",
+              scrub: 1.2,
             },
           }
         );
@@ -90,6 +92,10 @@ export default function Garage() {
 
   return (
     <section className="section garage" id="garage" ref={rootRef}>
+      <div className="garage-doors" ref={doorRef} aria-hidden="true">
+        <div className="garage-door garage-door--left" />
+        <div className="garage-door garage-door--right" />
+      </div>
       <div className="garage-stage" ref={stageRef}>
         <div className="garage-head">
           <div className="eyebrow mono">
@@ -106,6 +112,24 @@ export default function Garage() {
         </div>
 
         <div className="garage-canvas">
+          <div className="garage-controls mono">
+            <button
+              type="button"
+              className={`garage-ctrl ${manualOrbit ? "is-active" : ""}`}
+              onClick={() => { setManualOrbit(true); setAutoSpin(false); }}
+              data-cursor="link"
+            >
+              DRAG 360°
+            </button>
+            <button
+              type="button"
+              className={`garage-ctrl ${autoSpin ? "is-active" : ""}`}
+              onClick={() => { setAutoSpin((v) => !v); setManualOrbit(false); }}
+              data-cursor="link"
+            >
+              AUTO SPIN
+            </button>
+          </div>
           {webgl ? (
             <Suspense fallback={null}>
               <GarageScene
@@ -113,6 +137,8 @@ export default function Garage() {
                 explodeRef={explodeRef}
                 activePart={activePart}
                 onPart={setActivePart}
+                autoSpin={autoSpin}
+                manualOrbit={manualOrbit}
               />
             </Suspense>
           ) : (
