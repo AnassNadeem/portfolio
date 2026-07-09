@@ -137,7 +137,8 @@ Deno.serve(async (req: Request) => {
 
   // Email notification via Resend — best-effort (message already saved in DB)
   const resendKey = Deno.env.get("RESEND_API_KEY") ?? "";
-  const toEmail = Deno.env.get("NOTIFICATION_EMAIL") ?? "";
+  const toEmail = Deno.env.get("NOTIFICATION_EMAIL") ?? "anass.nadeem42@gmail.com";
+  let notificationSent = false;
   if (resendKey && toEmail) {
     const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -174,11 +175,43 @@ Deno.serve(async (req: Request) => {
         `,
       }),
     });
-    if (!emailRes.ok) {
+    if (emailRes.ok) {
+      notificationSent = true;
+    } else {
       // Message is in DB — don't fail the user, just log
       console.error("[contact-submit] resend:", await emailRes.text());
     }
+  } else if (!resendKey) {
+    console.warn("[contact-submit] resend: RESEND_API_KEY not configured");
   }
 
-  return json({ ok: true });
+  // Discord notification via webhook — best-effort (message already saved + emailed)
+  const discordUrl = Deno.env.get("DISCORD_WEBHOOK_URL") ?? "";
+  if (discordUrl) {
+    const discordRes = await fetch(discordUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        embeds: [
+          {
+            title: `📨 ${cleanSubject}`,
+            description: cleanMessage.slice(0, 1800),
+            color: 0xe10600,
+            fields: [
+              { name: "From", value: cleanName, inline: true },
+              { name: "Email", value: cleanEmail, inline: true },
+            ],
+            footer: { text: "apex-portfolio · contact form" },
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      }),
+    });
+    if (!discordRes.ok) {
+      // Message is in DB + emailed — don't fail the user, just log
+      console.error("[contact-submit] discord:", await discordRes.text());
+    }
+  }
+
+  return json({ ok: true, notificationSent });
 });

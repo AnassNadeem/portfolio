@@ -14,6 +14,10 @@ const CONTACT_URL = import.meta.env.VITE_SUPABASE_URL
   ? `${import.meta.env.VITE_SUPABASE_URL as string}/functions/v1/contact-submit`
   : null;
 
+// Public anon key — already embedded in the bundle; sent so the call passes
+// Supabase's gateway JWT check regardless of the function's verify_jwt setting.
+const ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ?? "";
+
 const TURNSTILE_SITE_KEY = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) ?? "";
 
 type Fields = { name: string; email: string; subject: string; message: string };
@@ -23,7 +27,11 @@ const EMPTY: Fields = { name: "", email: "", subject: SUBJECTS[0], message: "" }
 async function callEdge(url: string, body: object): Promise<Response> {
   const opts: RequestInit = {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      apikey: ANON_KEY,
+      Authorization: `Bearer ${ANON_KEY}`,
+    },
     body: JSON.stringify(body),
   };
   try {
@@ -40,6 +48,7 @@ export default function Contact() {
   const [fields, setFields] = useState<Fields>(EMPTY);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [tsResetKey, setTsResetKey] = useState(0);
+  const [notificationPending, setNotificationPending] = useState(false);
 
   const set = useCallback(
     (k: keyof Fields) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
@@ -60,6 +69,9 @@ export default function Contact() {
     if (!name.trim()) errs.name = "CALL SIGN REQUIRED";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "INVALID FREQUENCY";
     if (message.trim().length < 10) errs.message = "MESSAGE TOO SHORT (MIN 10)";
+    if (CONTACT_URL && !TURNSTILE_SITE_KEY) {
+      errs.server = "FORM MISCONFIGURED — TURNSTILE SITE KEY MISSING";
+    }
     if (CONTACT_URL && TURNSTILE_SITE_KEY && !turnstileToken) errs.turnstile = "COMPLETE THE BOT CHECK BELOW";
     setErrors(errs);
     if (Object.keys(errs).length) return;
@@ -73,20 +85,40 @@ export default function Contact() {
         const hp = (form.elements.namedItem("website") as HTMLInputElement | null)?.value ?? "";
         const res = await callEdge(CONTACT_URL, { name: name.trim(), email: email.trim(), subject, message: message.trim(), turnstileToken, hp });
         if (res.ok) {
+          let pending = false;
+          try {
+            const data = (await res.json()) as { notificationSent?: boolean };
+            pending = data.notificationSent === false;
+          } catch {
+            /* empty body is fine */
+          }
+          setNotificationPending(pending);
           setStatus("sent");
           setFields(EMPTY);
           setTurnstileToken("");
           setTsResetKey((k) => k + 1);
         } else {
-          const data = (await res.json()) as { error?: string };
+          let msg = "Unknown error";
+          try {
+            const data = (await res.json()) as { error?: string };
+            msg = data.error ?? msg;
+          } catch {
+            msg = res.status === 404
+              ? "CONTACT SERVICE NOT FOUND — CHECK DEPLOYMENT"
+              : res.status === 401 || res.status === 403
+              ? "AUTH FAILED — CHECK SUPABASE KEYS"
+              : `SERVER ERROR (${res.status})`;
+          }
           setStatus("error");
-          setErrors({ server: data.error ?? "Unknown error" });
-          // Reset Turnstile so user can re-challenge
+          setErrors({ server: msg });
           setTsResetKey((k) => k + 1);
           setTurnstileToken("");
         }
       } catch {
         setStatus("error");
+        setErrors({
+          server: "NETWORK ERROR — CHECK CONNECTION OR TRY EMAIL DIRECTLY",
+        });
         setTsResetKey((k) => k + 1);
         setTurnstileToken("");
       }
@@ -134,7 +166,7 @@ export default function Contact() {
               </span>
             </div>
 
-            <p className="contact-lede hl">
+            <p className="contact-lede hl-reveal">
               Have a project that needs to go faster — or a team that needs a closer?
               My inbox is always open. Radio in and I'll get back within 24 hours.
             </p>
@@ -187,13 +219,15 @@ export default function Contact() {
                   <h3 className="display">Radio received.</h3>
                   <p>
                     {useEdge
-                      ? "Message transmitted — I'll get back to you within 24 hours."
+                      ? notificationPending
+                        ? "Message saved — email notification is pending. I'll still get back to you within 24 hours."
+                        : "Message transmitted — I'll get back to you within 24 hours."
                       : FORM_ENDPOINT
                       ? "Message transmitted — I'll get back to you within 24 hours."
                       : "Your mail client should be open with the draft. Didn't open? Email me directly at "}
                     {!useEdge && !FORM_ENDPOINT && <a href={`mailto:${driver.email}`}>{driver.email}</a>}
                   </p>
-                  <button className="btn btn--ghost" onClick={() => setStatus("idle")} data-cursor="link">
+                  <button className="btn btn--ghost" onClick={() => { setStatus("idle"); setNotificationPending(false); }} data-cursor="link">
                     <span>Send Another</span>
                   </button>
                 </motion.div>
