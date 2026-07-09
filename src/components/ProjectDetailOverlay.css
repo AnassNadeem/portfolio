@@ -1,0 +1,97 @@
+.pdo-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1800;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(6, 6, 8, 0.82);
+  backdrop-filter: blur(12px);
+}
+
+.pdo-card {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
+  transform-style: preserve-3d;
+  perspective: 1200px;
+}
+
+.pdo-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  background: rgba(10, 10, 12, 0.8);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.pdo-cover img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  display: block;
+}
+
+.pdo-body {
+  padding: 24px 28px 28px;
+}
+
+.pdo-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-bottom: 12px;
+}
+
+.pdo-title {
+  font-size: clamp(28px, 5vw, 40px);
+  margin-bottom: 14px;
+}
+
+.pdo-desc {
+  color: var(--text-dim);
+  line-height: 1.65;
+  margin-bottom: 20px;
+}
+
+.pdo-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.pdo-tel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border: 1px solid var(--line-soft);
+  background: var(--bg-2);
+}
+
+.pdo-links {
+  display: flex;
+  gap: 18px;
+}
+
+.pdo-links a {
+  color: var(--accent);
+  font-size: 11px;
+}
+
+.pdo-links a:hover {
+  text-decoration: underline;
+}

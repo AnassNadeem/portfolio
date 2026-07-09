@@ -1,0 +1,20 @@
+.role-rotator {
+  font-family: var(--font-variable);
+  font-size: clamp(18px, 2.8vw, 28px);
+  font-weight: 500;
+  font-variation-settings: "wght" 600;
+  color: var(--text-dim);
+  margin: 0 0 32px;
+  min-height: 1.4em;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  max-width: 520px;
+}
+
+.role-rotator::before {
+  content: "// ";
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.75em;
+  letter-spacing: 0.08em;
+}
