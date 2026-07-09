@@ -12,6 +12,13 @@ export const driver = {
   initials: "AN",
   number: "42", // race number — from anass.nadeem42
   role: "Software Engineer — AI & Full-Stack",
+  roles: [
+    "Machine Learning Engineer",
+    "Software Engineer",
+    "AI Systems Builder",
+    "Full-Stack Developer",
+    "Performance Engineer",
+  ],
   tagline:
     "I ship fast and build with AI daily — taking projects from idea to working prototype solo, and finishing them to the last detail.",
   location: "Uxbridge · London, UK",
@@ -30,6 +37,7 @@ export const FORM_ENDPOINT = import.meta.env.VITE_FORM_ENDPOINT ?? "";
 export const LEADERBOARD_ENDPOINT = import.meta.env.VITE_LEADERBOARD_ENDPOINT ?? "";
 
 export const about = {
+  lead: "CS undergrad at Brunel who ships fast — full-stack web, AI agents, and workflow automation. Oxford Physical AI hackathon winner.",
   paragraphs: [
     "I'm a Computer Science undergraduate at Brunel University London who ships fast and builds with AI daily — full-stack web, AI agents, and workflow automation. First-place winner at the Oxford Physical AI hackathon, where my team was the only one to get the hardware fully running.",
     "I'm comfortable taking a project from idea to working prototype solo — combining Python, TypeScript/React and frontier-model APIs (Anthropic, OpenAI) to build more than should be possible alone. On the side, I work as a freelance automation specialist.",
@@ -151,6 +159,12 @@ export type Project = {
   stack: string[];
   github?: string;
   live?: string;
+  /** Published paper / write-up link — renders a "PAPER ↗" pill when set. */
+  paper?: string;
+  /** Cover image shown in the pit-wall monitor. Drop a real file in
+   *  public/projects/ (keep the same name) or point this at any path/URL.
+   *  When omitted, the procedural circuit art is shown instead. */
+  image?: string;
   trackId: number;
   featured?: boolean;
   status?: string;
@@ -166,6 +180,7 @@ export const projects: Project[] = [
       "Always-on Race Intelligence System — an ML pipeline that ingests racing telemetry and surfaces strategy signals in real time. The pit wall, automated.",
     stack: ["Python", "Jupyter", "ML", "Telemetry"],
     github: "https://github.com/AnassNadeem/ARIS",
+    image: "/projects/aris.png",
     trackId: 0,
     featured: true,
     status: "LIVE FEED",
@@ -179,6 +194,7 @@ export const projects: Project[] = [
       "AI job-hunting mate — finds relevant London roles, rewrites your CV to fit each one, and applies so you don't have to.",
     stack: ["TypeScript", "AI Agents", "Automation"],
     github: "https://github.com/AnassNadeem/ApplyPilot",
+    image: "/projects/applypilot.png",
     trackId: 1,
     status: "IN PRODUCTION",
   },
@@ -192,11 +208,38 @@ export const projects: Project[] = [
     stack: ["Java", "JavaFX 21", "SQLite", "JUnit 5"],
     github: "https://github.com/AnassNadeem/raez-ecommerce-app",
     live: "https://github.com/AnassNadeem/raez-ecommerce-app/releases/latest",
+    image: "/projects/raez.png",
     trackId: 2,
     status: "v1 RELEASED",
   },
   {
     round: "R4",
+    name: "BoxBox",
+    repo: "AnassNadeem/BoxBox",
+    year: "2026",
+    description:
+      "F1-flavoured build — now complete, with an accompanying published paper documenting the approach and results. Code shipped, findings written up.",
+    stack: ["Python", "ML", "Telemetry", "Research"],
+    github: "https://github.com/AnassNadeem/BoxBox",
+    paper: "https://github.com/AnassNadeem/BoxBox", // TODO: replace with the real published-paper URL
+    image: "/projects/boxbox.png",
+    trackId: 5,
+    status: "PAPER PUBLISHED",
+  },
+  {
+    round: "R5",
+    name: "This Portfolio",
+    year: "2026",
+    description:
+      "The site you're on — procedural 3D F1 car, scroll-driven racing line, exploded-view garage, synthesized engine audio, playable arcade.",
+    stack: ["React", "Three.js", "GSAP", "Framer Motion", "Vite"],
+    github: "https://github.com/AnassNadeem",
+    image: "/projects/portfolio.png",
+    trackId: 0,
+    status: "YOU ARE HERE",
+  },
+  {
+    round: "R6",
     name: "News Sentiment",
     repo: "AnassNadeem/news-sentiment-reporter",
     year: "2025",
@@ -204,11 +247,12 @@ export const projects: Project[] = [
       "Python NLP pipeline that scrapes RSS headlines, scores sentiment with TextBlob, and renders visual summaries to CSV and charts.",
     stack: ["Python", "TextBlob", "RSS", "Matplotlib"],
     github: "https://github.com/AnassNadeem/news-sentiment-reporter",
+    image: "/projects/news-sentiment.png",
     trackId: 3,
     status: "STABLE",
   },
   {
-    round: "R5",
+    round: "R7",
     name: "Lead Machine",
     repo: "AnassNadeem/lead-machine-realestate",
     year: "2026",
@@ -216,31 +260,9 @@ export const projects: Project[] = [
       "Lead-generation machine for real estate — high-converting landing funnel with a capture pipeline behind it. Freelance client work.",
     stack: ["HTML/CSS", "JavaScript", "Funnels"],
     github: "https://github.com/AnassNadeem/lead-machine-realestate",
+    image: "/projects/lead-machine.png",
     trackId: 4,
     status: "CLIENT WORK",
-  },
-  {
-    round: "R6",
-    name: "BoxBox",
-    repo: "AnassNadeem/BoxBox",
-    year: "2026",
-    description:
-      "Under wraps — a new F1-flavoured build in active development. Telemetry says: watch this space.",
-    stack: ["Classified 🏁"],
-    github: "https://github.com/AnassNadeem/BoxBox",
-    trackId: 5,
-    status: "IN DEVELOPMENT",
-  },
-  {
-    round: "R7",
-    name: "This Portfolio",
-    year: "2026",
-    description:
-      "The site you're on — procedural 3D F1 car, scroll-driven racing line, exploded-view garage, synthesized engine audio, playable arcade. Zero image assets.",
-    stack: ["React", "Three.js", "GSAP", "Framer Motion", "Vite"],
-    github: "https://github.com/AnassNadeem",
-    trackId: 0,
-    status: "YOU ARE HERE",
   },
 ];
 
@@ -383,6 +405,12 @@ export const ARCADE_BOTS = {
     { name: "APX", ms: 38500 },
     { name: "GRD", ms: 54300 },
     { name: "PIT", ms: 76800 },
+  ],
+  gridrun: [
+    { name: "HAM", ms: 580000 },
+    { name: "VER", ms: 565000 },
+    { name: "NOR", ms: 542000 },
+    { name: "LEC", ms: 518000 },
   ],
 };
 
