@@ -6,7 +6,7 @@ import Navbar from "./components/Navbar";
 import SpeedHUD, { RaceToasts } from "./components/SpeedHUD";
 import RaceTimer from "./components/RaceTimer";
 import RacingLine from "./components/RacingLine";
-import Marquee from "./components/Marquee";
+import AmbientField from "./components/AmbientField";
 import Podium from "./components/Podium";
 
 // Defer all arcade game code until the user opens the game center
@@ -40,9 +40,7 @@ export default function App() {
       <main id="race-main" style={{ position: "relative" }}>
         <RacingLine />
         <Hero />
-        <Marquee
-          items={["Full-throttle engineering", "React", "TypeScript", "Python", "Three.js", "AI Agents", "Java", "Performance obsessed"]}
-        />
+        <AmbientField />
         <About />
         <Garage />
         <Experience />

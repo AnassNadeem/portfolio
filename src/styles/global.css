@@ -23,6 +23,7 @@
 
   /* type */
   --font-display: "Titillium Web", system-ui, sans-serif;
+  --font-variable: "Syne", var(--font-display);
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
   /* rhythm */
@@ -338,24 +339,39 @@ html.has-cursor select {
   transform: skewX(var(--skew)) translateY(-2px);
 }
 
-/* ── hover highlighter — text gets "marked" in the livery color ────────── */
+/* ── hover reveal underline ───────────────────────────────────────────── */
 
-.hl {
-  background-image: linear-gradient(
-    rgba(var(--accent-rgb), 0.95),
-    rgba(var(--accent-rgb), 0.95)
-  );
-  background-repeat: no-repeat;
-  background-size: 0% 82%;
-  background-position: 0 58%;
-  transition: background-size 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+.hl,
+.hl-reveal {
+  position: relative;
+  display: inline;
+  background: none;
+  transition: letter-spacing 0.35s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
 }
 
-.hl:hover {
-  background-size: 100% 82%;
-  color: var(--on-accent);
+.hl::after,
+.hl-reveal::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0.08em;
+  width: 100%;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hl:hover,
+.hl-reveal:hover {
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+
+.hl:hover::after,
+.hl-reveal:hover::after {
+  transform: scaleX(1);
 }
 
 /* ── curb divider (red/white kerb stripes) ─────────────────────────────── */
