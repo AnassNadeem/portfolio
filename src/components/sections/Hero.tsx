@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { gsap, SplitText } from "../../lib/gsap";
 import { useApp } from "../../context/AppContext";
 import { emit as busEmit } from "../../lib/bus";
+import RoleRotator from "../RoleRotator";
 import { driver } from "../../data/portfolio";
 import { supportsWebGL } from "../../lib/webgl";
 import "./Hero.css";
@@ -62,8 +63,9 @@ function MailIcon() {
 }
 
 export default function Hero() {
-  const { ready, reduced, accent, setAccent, liveryList, rev, scrollTo } = useApp();
+  const { ready, reduced, accent, setAccent, liveryList, scrollTo } = useApp();
   const rootRef = useRef<HTMLElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const [inView, setInView] = useState(true);
   const [tabVisible, setTabVisible] = useState(!document.hidden);
   const sceneActive = inView && tabVisible;
@@ -87,27 +89,57 @@ export default function Hero() {
     return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
+  // Interactive name — pointer proximity shifts variable font weight
+  useEffect(() => {
+    if (!ready || reduced) return;
+    const title = titleRef.current;
+    if (!title) return;
+    const chars = title.querySelectorAll<HTMLElement>(".hero-char");
+    if (!chars.length) return;
+
+    const onMove = (e: PointerEvent) => {
+      const rect = title.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      chars.forEach((ch) => {
+        const cr = ch.getBoundingClientRect();
+        const cx = cr.left + cr.width / 2 - rect.left;
+        const cy = cr.top + cr.height / 2 - rect.top;
+        const dist = Math.hypot(mx - cx, my - cy);
+        const wght = Math.max(400, Math.min(800, 800 - dist * 0.35));
+        ch.style.fontVariationSettings = `"wght" ${wght.toFixed(0)}`;
+        ch.style.transform = `skewY(${(mx - cx) * 0.002}deg)`;
+      });
+    };
+    const onLeave = () => {
+      chars.forEach((ch) => {
+        ch.style.fontVariationSettings = '"wght" 700';
+        ch.style.transform = "";
+      });
+    };
+    title.addEventListener("pointermove", onMove);
+    title.addEventListener("pointerleave", onLeave);
+    return () => {
+      title.removeEventListener("pointermove", onMove);
+      title.removeEventListener("pointerleave", onLeave);
+    };
+  }, [ready, reduced]);
+
   useGSAP(
     () => {
       if (!ready || reduced) return;
       const q = gsap.utils.selector(rootRef);
       const tl = gsap.timeline({ delay: 0.15 });
 
-      tl.to(q(".hero-eyebrow"), {
-        opacity: 1,
-        duration: 1.0,
-        scrambleText: { text: `// ${driver.role.toUpperCase()}`, chars: "▮▯/\\<>_", speed: 0.8 },
-      } as gsap.TweenVars);
-
-      const split = SplitText.create(q(".hero-title .line"), { type: "chars" });
+      const split = SplitText.create(q(".hero-title .line"), { type: "chars", charsClass: "hero-char" });
       tl.from(
         split.chars,
         { yPercent: 118, stagger: 0.03, duration: 1.0, ease: "power4.out" },
-        "-=0.55"
+        0
       );
 
       tl.from(
-        q(".hero-sub, .hero-ctas, .hero-socials, .hero-garage, .hero-hint"),
+        q(".role-rotator, .hero-ctas, .hero-socials, .hero-garage, .hero-chips"),
         { y: 26, opacity: 0, stagger: 0.09, duration: 0.7, ease: "power3.out" },
         "-=0.5"
       );
@@ -145,14 +177,15 @@ export default function Hero() {
       </div>
 
       <div className="hero-content container">
-        <p className="hero-eyebrow mono" style={{ opacity: 0 }}>
-          {/* scrambled in */}
-        </p>
-        <h1 className="hero-title display" aria-label={`${driver.firstName} ${driver.lastName}`}>
+        <h1
+          className="hero-title hero-title--variable"
+          ref={titleRef}
+          aria-label={`${driver.firstName} ${driver.lastName}`}
+        >
           <span className="line-mask"><span className="line">{driver.firstName}</span></span>
           <span className="line-mask"><span className="line line--outline">{driver.lastName}</span></span>
         </h1>
-        <p className="hero-sub hl">{driver.tagline}</p>
+        <RoleRotator ready={ready} reduced={reduced} />
 
         <div className="hero-ctas">
           <button className="btn" onClick={() => scrollTo("#projects")} data-cursor="view">
@@ -168,23 +201,12 @@ export default function Hero() {
           <a href={driver.github} target="_blank" rel="noreferrer" aria-label="GitHub" data-cursor="link"><GitHubIcon /></a>
           <a href={driver.linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn" data-cursor="link"><LinkedInIcon /></a>
           <a href={`mailto:${driver.email}`} aria-label="Email" data-cursor="link"><MailIcon /></a>
-          <span className="hero-socials-rule" />
-          <span className="mono hero-socials-label">{driver.location}</span>
         </div>
 
-        {/* interactive pit lane — the car answers to all of these */}
         <div className="hero-chips">
-          <button className="hero-hint mono" onClick={rev} data-cursor="rev">
-            <span className="hero-hint-dot" />
-            CLICK THE CAR — REV IT
-          </button>
-          <button className="hero-hint mono" onClick={() => busEmit("pitstop")} data-cursor="link">
-            <span className="hero-hint-dot hero-hint-dot--amber" />
-            BOX BOX — PIT STOP
-          </button>
           <button className="hero-hint mono" onClick={() => scrollTo("#garage")} data-cursor="view">
             <span className="hero-hint-dot hero-hint-dot--white" />
-            EXPLODE VIEW — GARAGE ▸
+            EXPLORE GARAGE ▸
           </button>
           <button className="hero-hint mono" onClick={() => busEmit("hotlap")} data-cursor="link">
             <span className="hero-hint-dot hero-hint-dot--green" />

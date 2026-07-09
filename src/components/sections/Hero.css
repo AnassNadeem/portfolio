@@ -50,7 +50,23 @@
 
 .hero-title {
   font-size: clamp(58px, 10.5vw, 148px);
-  margin-bottom: 26px;
+  margin-bottom: 12px;
+}
+
+.hero-title--variable {
+  font-family: var(--font-variable);
+  font-weight: 700;
+  font-variation-settings: "wght" 700;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  line-height: 0.92;
+}
+
+.hero-title--variable .hero-char {
+  display: inline-block;
+  will-change: transform, font-variation-settings;
+  transition: font-variation-settings 0.15s ease;
 }
 
 .hero-title .line-mask {
@@ -69,19 +85,11 @@
   -webkit-text-stroke: 2px rgba(245, 245, 247, 0.75);
 }
 
-.hero-sub {
-  max-width: 480px;
-  color: var(--text-dim);
-  font-size: 18px;
-  margin-bottom: 36px;
-  text-wrap: balance;
-}
-
 .hero-ctas {
   display: flex;
   flex-wrap: wrap;
   gap: 18px;
-  margin-bottom: 44px;
+  margin-bottom: 28px;
 }
 
 .hero-socials {

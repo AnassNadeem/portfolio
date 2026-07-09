@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import { motion, useMotionValue, useSpring, useTransform, useInView, animate } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, useInView, animate, AnimatePresence } from "framer-motion";
 import SectionHeader from "../SectionHeader";
 import { useApp } from "../../context/AppContext";
 import { driver, about } from "../../data/portfolio";
@@ -181,6 +181,7 @@ function DriverCard() {
 
 export default function About() {
   const { reduced } = useApp();
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <section className="section about" id="about">
@@ -191,35 +192,56 @@ export default function About() {
           <DriverCard />
 
           <div className="about-copy">
-            {about.paragraphs.map((p, i) => (
-              <motion.p
-                key={i}
-                initial={reduced ? false : { opacity: 0, y: 26 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.5 }}
-                transition={{ duration: 0.65, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
-              >
-                {p}
-              </motion.p>
-            ))}
+            <motion.p
+              className="about-lead"
+              initial={reduced ? false : { opacity: 0, y: 26 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {about.lead}
+            </motion.p>
 
-            <ul className="about-values">
-              {about.values.map((v, i) => (
-                <motion.li
-                  key={v.k}
-                  initial={reduced ? false : { opacity: 0, x: -26 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, amount: 0.6 }}
-                  transition={{ duration: 0.55, delay: 0.15 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+            <button
+              className="about-more mono"
+              onClick={() => setExpanded((v) => !v)}
+              data-cursor="link"
+              aria-expanded={expanded}
+            >
+              {expanded ? "SHOW LESS ▴" : "READ MORE ▾"}
+            </button>
+
+            <AnimatePresence>
+              {expanded && (
+                <motion.div
+                  className="about-expanded"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <span className="about-value-flag" aria-hidden="true" />
-                  <div>
-                    <strong className="mono hl">{v.k}</strong>
-                    <span>{v.v}</span>
-                  </div>
-                </motion.li>
+                  {about.paragraphs.map((p, i) => (
+                    <p key={i}>{p}</p>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="about-chips">
+              {about.values.map((v, i) => (
+                <motion.span
+                  key={v.k}
+                  className="about-chip mono"
+                  initial={reduced ? false : { opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.6 }}
+                  transition={{ duration: 0.45, delay: 0.1 + i * 0.08 }}
+                  title={v.v}
+                >
+                  {v.k}
+                </motion.span>
               ))}
-            </ul>
+            </div>
 
             <SeasonTelemetry />
 

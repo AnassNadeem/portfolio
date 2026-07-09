@@ -245,6 +245,56 @@
   animation: tel-live 1.6s ease-in-out infinite;
 }
 
+.about-lead {
+  font-size: 18px;
+  line-height: 1.65;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.about-more {
+  display: inline-block;
+  margin-bottom: 20px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.about-expanded {
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.about-expanded p {
+  color: var(--text-dim);
+  margin-bottom: 14px;
+  line-height: 1.65;
+}
+
+.about-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.about-chip {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  font-size: 9px;
+  color: var(--text-dim);
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.about-chip:hover {
+  border-color: rgba(var(--accent-rgb), 0.6);
+  color: var(--text);
+}
+
 @media (max-width: 1020px) {
   .about-grid {
     grid-template-columns: 1fr;

@@ -72,7 +72,7 @@ export default function Experience() {
                   <span className="xp-season">{e.seasons}</span>
                   <span className="xp-type">{e.type}</span>
                 </div>
-                <h3 className="xp-role display hl">{e.role}</h3>
+                <h3 className="xp-role display hl-reveal">{e.role}</h3>
                 <div className="xp-company mono">@ {e.company}</div>
                 <ul className="xp-points">
                   {e.points.map((p) => (
