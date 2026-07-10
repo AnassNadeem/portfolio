@@ -69,6 +69,9 @@ export default function Contact() {
     if (!name.trim()) errs.name = "CALL SIGN REQUIRED";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "INVALID FREQUENCY";
     if (message.trim().length < 10) errs.message = "MESSAGE TOO SHORT (MIN 10)";
+    if (CONTACT_URL && !ANON_KEY) {
+      errs.server = "SUPABASE ANON KEY MISSING — COPY .env.example TO .env";
+    }
     if (CONTACT_URL && !TURNSTILE_SITE_KEY) {
       errs.server = "FORM MISCONFIGURED — TURNSTILE SITE KEY MISSING";
     }
@@ -114,10 +117,13 @@ export default function Contact() {
           setTsResetKey((k) => k + 1);
           setTurnstileToken("");
         }
-      } catch {
+      } catch (err) {
         setStatus("error");
+        const detail = err instanceof Error ? err.message : "";
         setErrors({
-          server: "NETWORK ERROR — CHECK CONNECTION OR TRY EMAIL DIRECTLY",
+          server: detail.includes("Failed to fetch")
+            ? "NETWORK ERROR — REDEPLOY contact-submit (CORS) OR CHECK .env KEYS"
+            : "NETWORK ERROR — CHECK CONNECTION OR TRY EMAIL DIRECTLY",
         });
         setTsResetKey((k) => k + 1);
         setTurnstileToken("");
