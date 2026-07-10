@@ -33,3 +33,9 @@ Thumbs.db
 
 # Misc local tooling
 .gstack/
+
+# Design-review screenshots (scripts/shoot.mjs)
+.shots/
+
+# Supabase CLI local cache (contains project refs — never commit)
+supabase/.temp/
