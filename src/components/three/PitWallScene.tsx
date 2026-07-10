@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Text, useTexture } from "@react-three/drei";
+import { useTexture } from "@react-three/drei";
 import { projects, driver, type Project } from "../../data/portfolio";
 import { useApp } from "../../context/AppContext";
 
@@ -81,6 +81,53 @@ function makeStaticTexture(): THREE.CanvasTexture {
   const tex = new THREE.CanvasTexture(c);
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
   return tex;
+}
+
+/** CSP-safe 3D label — canvas texture instead of troika workers (blocked under strict CSP). */
+function makeCanvasTextTexture(
+  lines: { text: string; size: number; color: string; y: number; font?: string }[],
+  width = 1024,
+  height = 256
+): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = width;
+  c.height = height;
+  const tex = new THREE.CanvasTexture(c);
+  const draw = () => {
+    const x = c.getContext("2d")!;
+    x.clearRect(0, 0, width, height);
+    for (const line of lines) {
+      x.font = `${line.size}px ${line.font ?? "'JetBrains Mono', monospace"}`;
+      x.fillStyle = line.color;
+      x.textAlign = "center";
+      x.textBaseline = "middle";
+      x.fillText(line.text, width / 2, line.y);
+    }
+    tex.needsUpdate = true;
+  };
+  draw();
+  document.fonts?.ready.then(draw);
+  return tex;
+}
+
+function CanvasTextPlane({
+  lines,
+  position,
+  rotation = [0, 0, 0],
+  plane = [1.9, 0.5],
+}: {
+  lines: { text: string; size: number; color: string; y: number; font?: string }[];
+  position: [number, number, number];
+  rotation?: [number, number, number];
+  plane?: [number, number];
+}) {
+  const tex = useMemo(() => makeCanvasTextTexture(lines), [JSON.stringify(lines)]);
+  return (
+    <mesh position={position} rotation={rotation} raycast={() => null}>
+      <planeGeometry args={plane} />
+      <meshBasicMaterial map={tex} transparent toneMapped={false} depthWrite={false} />
+    </mesh>
+  );
 }
 
 /** thin scanline overlay shared by all screens */
@@ -229,6 +276,24 @@ function VacantMonitor({
     );
   });
 
+  const vacantTex = useMemo(
+    () =>
+      makeCanvasTextTexture(
+        [
+          { text: "AWAITING SIGNAL", size: 56, color: hovered ? accent : "#9ba1a6", y: 72 },
+          {
+            text: `R${projects.length + 1} — YOUR PROJECT? OPEN THE RADIO ▸`,
+            size: 36,
+            color: "#71767c",
+            y: 184,
+          },
+        ],
+        1024,
+        256
+      ),
+    [hovered, accent]
+  );
+
   return (
     <group position={pos} rotation={[Math.atan2(y, RADIUS) * -0.28, -angle, 0]}>
       <mesh position={[0, -0.06, -0.045]}>
@@ -258,29 +323,10 @@ function VacantMonitor({
         <planeGeometry args={[SCREEN_W, SCREEN_H]} />
         <meshBasicMaterial map={scanTex} transparent opacity={0.5} depthWrite={false} />
       </mesh>
-      <Text
-        position={[0, 0.13, 0.01]}
-        fontSize={0.115}
-        color={hovered ? accent : "#9ba1a6"}
-        anchorX="center"
-        anchorY="middle"
-        letterSpacing={0.2}
-        maxWidth={1.9}
-      >
-        AWAITING SIGNAL
-      </Text>
-      <Text
-        position={[0, -0.12, 0.01]}
-        fontSize={0.072}
-        color="#71767c"
-        anchorX="center"
-        anchorY="middle"
-        letterSpacing={0.12}
-        maxWidth={1.9}
-        textAlign="center"
-      >
-        {`R${projects.length + 1} — YOUR PROJECT? OPEN THE RADIO ▸`}
-      </Text>
+      <mesh position={[0, 0, 0.01]} raycast={() => null}>
+        <planeGeometry args={[SCREEN_W * 0.92, SCREEN_H * 0.55]} />
+        <meshBasicMaterial map={vacantTex} transparent toneMapped={false} depthWrite={false} />
+      </mesh>
     </group>
   );
 }
@@ -502,19 +548,20 @@ export default function PitWallScene({
       </Suspense>
 
       <PanRig api={api} progressEl={progressEl} wallRef={wallRef} />
-      <group position={[0, 0, 0]}>
-        {/* driver name plate on the desk edge, grounding the room */}
-        <Text
-          position={[0, -1.9, -3.2]}
-          rotation={[-0.5, 0, 0]}
-          fontSize={0.16}
-          color="#3a3f45"
-          anchorX="center"
-          letterSpacing={0.3}
-        >
-          {`${driver.lastName} — RACE ENGINEER`}
-        </Text>
-      </group>
+      <CanvasTextPlane
+        lines={[
+          {
+            text: `${driver.lastName} — RACE ENGINEER`,
+            size: 42,
+            color: "#3a3f45",
+            y: 128,
+            font: "'JetBrains Mono', monospace",
+          },
+        ]}
+        position={[0, -1.9, -3.2]}
+        rotation={[-0.5, 0, 0]}
+        plane={[3.2, 0.35]}
+      />
     </Canvas>
   );
 }

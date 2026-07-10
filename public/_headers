@@ -18,6 +18,7 @@
   #
   # script-src:
   #   'self'                                — Vite JS bundles (/assets/*.js)
+  #   blob:                                 — Web Workers (Three.js / troika text)
   #   https://challenges.cloudflare.com     — Cloudflare Turnstile widget script
   #
   # style-src:
@@ -46,4 +47,4 @@
   #   blob:                                 — Three.js / Vite workers
   #
   # Update this hash if you change the inline <style> in index.html and rebuild.
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' https://fonts.googleapis.com 'sha256-3vKqmL/ERXHvikLwNO1AfI8y3Z7OJyl814rT6rA5s58='; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://ckgxufyrfoxkyzcctrzg.supabase.co https://challenges.cloudflare.com https://api.github.com; frame-src https://challenges.cloudflare.com; img-src 'self' data: blob:; worker-src blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' blob: https://challenges.cloudflare.com; style-src 'self' https://fonts.googleapis.com 'sha256-3vKqmL/ERXHvikLwNO1AfI8y3Z7OJyl814rT6rA5s58='; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://ckgxufyrfoxkyzcctrzg.supabase.co https://challenges.cloudflare.com https://api.github.com; frame-src https://challenges.cloudflare.com; img-src 'self' data: blob:; worker-src blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests

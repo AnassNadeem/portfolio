@@ -22,6 +22,18 @@
 6. Set `VITE_SITE_URL` to that URL and **redeploy**
 7. Turnstile → add hostname `<project>.pages.dev` (or `*.pages.dev`)
 
+### Turnstile (contact form + arcade) — required
+
+The bot check shows **"Unable to connect to website"** until your live hostname is allowed:
+
+1. Cloudflare dashboard → **Turnstile** → your widget → **Settings**
+2. Under **Hostname management**, add your exact live URL host, e.g.:
+   - `portfolio.anass-nadeem42.workers.dev`
+   - (later) `yourdomain.com`
+3. Save — no redeploy needed; refresh the page
+
+If the widget still fails, confirm `VITE_TURNSTILE_SITE_KEY` in Cloudflare Pages env matches the **Site Key** (not the secret).
+
 ## Supabase backend (run locally once)
 
 ```bash
