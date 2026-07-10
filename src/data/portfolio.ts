@@ -407,10 +407,11 @@ export const ARCADE_BOTS = {
     { name: "PIT", ms: 76800 },
   ],
   gridrun: [
-    { name: "HAM", ms: 580000 },
-    { name: "VER", ms: 565000 },
-    { name: "NOR", ms: 542000 },
-    { name: "LEC", ms: 518000 },
+    { name: "APX", ms: 528000 }, // ~7,200 pts — the house ghost, hard to beat
+    { name: "VER", ms: 543000 }, // ~5,700 pts
+    { name: "LEC", ms: 558000 }, // ~4,200 pts
+    { name: "NOR", ms: 571000 }, // ~2,900 pts
+    { name: "HAM", ms: 585000 }, // ~1,500 pts — beatable in a first clean run
   ],
 };
 
