@@ -89,37 +89,59 @@ export default function Hero() {
     return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
-  // Interactive name — pointer proximity shifts variable font weight
+  // Living name — a weight-wave travels through the letters continuously,
+  // and pointer proximity pushes individual glyphs heavier (variable font).
   useEffect(() => {
     if (!ready || reduced) return;
     const title = titleRef.current;
     if (!title) return;
-    const chars = title.querySelectorAll<HTMLElement>(".hero-char");
-    if (!chars.length) return;
+
+    let chars: HTMLElement[] = [];
+    const pointer = { x: 0, y: 0, inside: false };
 
     const onMove = (e: PointerEvent) => {
-      const rect = title.getBoundingClientRect();
-      const mx = e.clientX - rect.left;
-      const my = e.clientY - rect.top;
-      chars.forEach((ch) => {
-        const cr = ch.getBoundingClientRect();
-        const cx = cr.left + cr.width / 2 - rect.left;
-        const cy = cr.top + cr.height / 2 - rect.top;
-        const dist = Math.hypot(mx - cx, my - cy);
-        const wght = Math.max(400, Math.min(800, 800 - dist * 0.35));
-        ch.style.fontVariationSettings = `"wght" ${wght.toFixed(0)}`;
-        ch.style.transform = `skewY(${(mx - cx) * 0.002}deg)`;
-      });
+      pointer.inside = true;
+      pointer.x = e.clientX;
+      pointer.y = e.clientY;
     };
     const onLeave = () => {
-      chars.forEach((ch) => {
-        ch.style.fontVariationSettings = '"wght" 700';
-        ch.style.transform = "";
-      });
+      pointer.inside = false;
     };
     title.addEventListener("pointermove", onMove);
     title.addEventListener("pointerleave", onLeave);
+
+    let raf = 0;
+    const loop = (t: number) => {
+      raf = requestAnimationFrame(loop);
+      // SplitText (in useGSAP below) may not have run yet on the first frames
+      if (!chars.length) {
+        chars = Array.from(title.querySelectorAll<HTMLElement>(".hero-char"));
+        if (!chars.length) return;
+      }
+      for (let i = 0; i < chars.length; i++) {
+        const ch = chars[i];
+        // slow sine wave sweeping across the word
+        const wave = Math.sin(t * 0.0014 - i * 0.62);
+        let wght = 640 + wave * 110;
+        let skew = wave * 1.4;
+        if (pointer.inside) {
+          const cr = ch.getBoundingClientRect();
+          const cx = cr.left + cr.width / 2;
+          const cy = cr.top + cr.height / 2;
+          const dist = Math.hypot(pointer.x - cx, pointer.y - cy);
+          const pull = Math.max(0, 1 - dist / 320);
+          wght = Math.min(800, wght + pull * 220);
+          skew += (pointer.x - cx) * 0.004 * pull;
+        }
+        ch.style.fontVariationSettings = `"wght" ${wght.toFixed(0)}`;
+        // weight + a whisper of bob/skew = the word feels alive, not animated "at" you
+        ch.style.transform = `translateY(${(wave * 1.8).toFixed(2)}px) skewY(${skew.toFixed(2)}deg)`;
+      }
+    };
+    raf = requestAnimationFrame(loop);
+
     return () => {
+      cancelAnimationFrame(raf);
       title.removeEventListener("pointermove", onMove);
       title.removeEventListener("pointerleave", onLeave);
     };
@@ -204,9 +226,9 @@ export default function Hero() {
         </div>
 
         <div className="hero-chips">
-          <button className="hero-hint mono" onClick={() => scrollTo("#garage")} data-cursor="view">
-            <span className="hero-hint-dot hero-hint-dot--white" />
-            EXPLORE GARAGE ▸
+          <button className="hero-hint mono" onClick={() => busEmit("pitstop")} data-cursor="link">
+            <span className="hero-hint-dot hero-hint-dot--amber" />
+            BOX BOX — TYRE SWAP ▸
           </button>
           <button className="hero-hint mono" onClick={() => busEmit("hotlap")} data-cursor="link">
             <span className="hero-hint-dot hero-hint-dot--green" />

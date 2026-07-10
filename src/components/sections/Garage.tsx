@@ -62,9 +62,25 @@ export default function Garage() {
         });
         tl.fromTo(explodeRef, { current: 0 }, { current: 1, ease: "none", duration: 0.65 });
         tl.to(explodeRef, { current: 1, duration: 0.35 });
+
+        // laser scan — beam sweeps down then back up as you enter the bay
         if (doorRef.current) {
-          tl.fromTo(doorRef.current, { scaleY: 1 }, { scaleY: 0, ease: "power2.inOut", duration: 0.25 }, 0);
-          tl.to(doorRef.current, { scaleY: 1, ease: "power2.inOut", duration: 0.25 }, 0.75);
+          const beam = doorRef.current.querySelector(".garage-beam");
+          if (beam) {
+            tl.fromTo(
+              beam,
+              { top: "-8%", opacity: 1 },
+              { top: "108%", opacity: 1, ease: "none", duration: 0.14 },
+              0
+            );
+            tl.fromTo(
+              beam,
+              { top: "108%", opacity: 1 },
+              { top: "-8%", opacity: 0, ease: "none", duration: 0.14 },
+              0.14
+            );
+          }
+          tl.set(doorRef.current, { visibility: "hidden", pointerEvents: "none" }, 0.3);
         }
       });
 
@@ -92,9 +108,9 @@ export default function Garage() {
 
   return (
     <section className="section garage" id="garage" ref={rootRef}>
-      <div className="garage-doors" ref={doorRef} aria-hidden="true">
-        <div className="garage-door garage-door--left" />
-        <div className="garage-door garage-door--right" />
+      {/* laser scan reveal — scrubbed by scroll */}
+      <div className="garage-boot" ref={doorRef} aria-hidden="true">
+        <div className="garage-beam" />
       </div>
       <div className="garage-stage" ref={stageRef}>
         <div className="garage-head">

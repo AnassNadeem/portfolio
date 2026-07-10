@@ -3,9 +3,10 @@ import SectionHeader from "../SectionHeader";
 import ProjectDetailOverlay from "../ProjectDetailOverlay";
 import { projects, type Project } from "../../data/portfolio";
 import { supportsWebGL } from "../../lib/webgl";
+import type { WallApi } from "../three/PitWallScene";
 import "./Projects.css";
 
-const PitSphereScene = lazy(() => import("../three/PitSphereScene"));
+const PitWallScene = lazy(() => import("../three/PitWallScene"));
 
 function ProjectGridFallback({ onSelect }: { onSelect: (p: Project) => void }) {
   return (
@@ -34,6 +35,8 @@ export default function Projects() {
   const [inView, setInView] = useState(false);
   const [tabVisible, setTabVisible] = useState(!document.hidden);
   const stageRef = useRef<HTMLDivElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
+  const apiRef = useRef<WallApi>({ yawTarget: 0, maxYaw: 0.4 });
   const webgl = supportsWebGL();
   const sceneActive = inView && tabVisible && webgl;
 
@@ -51,22 +54,66 @@ export default function Projects() {
     return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
+  const nudge = (dir: -1 | 1) => {
+    const a = apiRef.current;
+    // half the available travel per tap — two taps reach either end
+    a.yawTarget = Math.max(-a.maxYaw, Math.min(a.maxYaw, a.yawTarget + dir * a.maxYaw * 0.5));
+  };
+
   return (
     <section className="section projects" id="projects">
       <div className="container">
         <SectionHeader sector="04" kicker="MISSION CONTROL" title="The Pit Wall" />
-        <p className="pw-hint mono">DRAG TO LOOK AROUND — CLICK A PROJECT FOR DETAILS</p>
+        <p className="pw-hint mono">
+          <span className="pw-hint-drag" aria-hidden="true">⟵ ⟶</span>
+          DRAG LEFT / RIGHT TO SCAN THE SCREENS — CLICK ONE TO OPEN ITS FEED
+        </p>
       </div>
 
-      <div className="pw-sphere-stage" ref={stageRef}>
+      <div className="pw-wall-stage" ref={stageRef}>
         {webgl ? (
-          <Suspense fallback={<div className="pw-sphere-loading mono">LOADING GALLERY…</div>}>
-            <PitSphereScene active={sceneActive} onSelect={setSelected} />
+          <Suspense fallback={<div className="pw-wall-loading mono">BOOTING MONITORS…</div>}>
+            <PitWallScene
+              active={sceneActive}
+              onSelect={setSelected}
+              api={apiRef}
+              progressEl={progressRef}
+            />
           </Suspense>
         ) : (
           <div className="container">
             <ProjectGridFallback onSelect={setSelected} />
           </div>
+        )}
+
+        {webgl && (
+          <>
+            {/* console frame: vignette, scanlines, desk silhouette */}
+            <div className="pw-frame" aria-hidden="true">
+              <div className="pw-frame-scanlines" />
+              <div className="pw-frame-desk" />
+            </div>
+
+            {/* HUD: session header strip */}
+            <div className="pw-hud mono" aria-hidden="true">
+              <span className="pw-hud-live" /> PIT WALL — LIVE
+              <span className="pw-hud-sep">|</span>
+              {projects.length} FEEDS
+            </div>
+
+            {/* pan controls */}
+            <button className="pw-arrow pw-arrow--left mono" onClick={() => nudge(1)} aria-label="Pan left" data-cursor="link">
+              ◀
+            </button>
+            <button className="pw-arrow pw-arrow--right mono" onClick={() => nudge(-1)} aria-label="Pan right" data-cursor="link">
+              ▶
+            </button>
+
+            {/* pan progress track */}
+            <div className="pw-track" aria-hidden="true">
+              <div className="pw-track-thumb" ref={progressRef} />
+            </div>
+          </>
         )}
       </div>
 

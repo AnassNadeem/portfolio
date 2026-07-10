@@ -3,32 +3,197 @@
 }
 
 .pw-hint {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   color: var(--text-faint);
   font-size: 10px;
   margin-top: -24px;
   margin-bottom: 24px;
 }
 
-.pw-sphere-stage {
+.pw-hint-drag {
+  color: var(--accent);
+  letter-spacing: 0;
+  animation: pw-drag-nudge 2.4s ease-in-out infinite;
+}
+
+@keyframes pw-drag-nudge {
+  0%, 100% { transform: translateX(0); }
+  35% { transform: translateX(-4px); }
+  70% { transform: translateX(4px); }
+}
+
+/* ── the console ── */
+.pw-wall-stage {
   position: relative;
-  height: min(85vh, 720px);
+  height: min(86vh, 740px);
   margin-inline: clamp(-20px, -3vw, 0);
   border-block: 1px solid var(--line);
-  background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(var(--accent-rgb), 0.06), transparent 70%);
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 42%, rgba(var(--accent-rgb), 0.07), transparent 68%),
+    linear-gradient(180deg, #08080b 0%, #0a0a0d 100%);
   overflow: hidden;
 }
 
-.pw-sphere-stage canvas {
-  touch-action: none;
+.pw-wall-stage canvas {
+  /* horizontal drag pans the wall; vertical touch keeps scrolling the page */
+  touch-action: pan-y;
 }
 
-.pw-sphere-loading {
+.pw-wall-loading {
   display: grid;
   place-items: center;
   height: 100%;
   color: var(--text-faint);
 }
 
+/* console frame — pure CSS set dressing above the canvas */
+.pw-frame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.pw-frame-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.16) 0 1px,
+    transparent 1px 4px
+  );
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+}
+
+.pw-frame::before {
+  /* vignette pulls the eye to the monitor bank */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 78% 66% at 50% 44%, transparent 55%, rgba(5, 5, 8, 0.82) 100%);
+}
+
+.pw-frame-desk {
+  /* the engineer's desk silhouette along the bottom */
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 13%;
+  background: linear-gradient(180deg, transparent 0%, rgba(7, 7, 10, 0.92) 34%, #060609 100%);
+}
+
+.pw-frame-desk::before {
+  content: "";
+  position: absolute;
+  top: 30%;
+  left: 6%;
+  right: 6%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--accent-rgb), 0.5) 30%,
+    rgba(var(--accent-rgb), 0.5) 70%,
+    transparent
+  );
+  box-shadow: 0 0 18px 2px rgba(var(--accent-rgb), 0.28);
+}
+
+/* HUD strip */
+.pw-hud {
+  position: absolute;
+  top: 14px;
+  left: clamp(16px, 3vw, 40px);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 9px;
+  color: var(--text-dim);
+  padding: 8px 14px;
+  background: rgba(10, 10, 13, 0.72);
+  border: 1px solid var(--line-soft);
+  backdrop-filter: blur(8px);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+}
+
+.pw-hud-live {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2bd354;
+  box-shadow: 0 0 8px rgba(43, 211, 84, 0.9);
+  animation: pw-live 1.3s ease-in-out infinite;
+}
+
+@keyframes pw-live {
+  50% { opacity: 0.3; }
+}
+
+.pw-hud-sep {
+  color: var(--text-faint);
+}
+
+/* pan arrows */
+.pw-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 46px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  color: var(--text-dim);
+  background: rgba(10, 10, 13, 0.66);
+  border: 1px solid var(--line-soft);
+  backdrop-filter: blur(6px);
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.pw-arrow:hover {
+  color: var(--text);
+  border-color: rgba(var(--accent-rgb), 0.7);
+  background: rgba(var(--accent-rgb), 0.12);
+}
+
+.pw-arrow--left {
+  left: clamp(10px, 2vw, 26px);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 12px);
+}
+
+.pw-arrow--right {
+  right: clamp(10px, 2vw, 26px);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+
+/* pan progress track */
+.pw-track {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  width: min(240px, 44vw);
+  height: 3px;
+  background: rgba(245, 245, 247, 0.1);
+  overflow: hidden;
+}
+
+.pw-track-thumb {
+  width: 28%;
+  height: 100%;
+  background: var(--accent);
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.8);
+  will-change: transform;
+}
+
+/* ── no-WebGL fallback grid ── */
 .pw-fallback-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -68,4 +233,17 @@
   color: var(--text-dim);
   font-size: 14px;
   line-height: 1.55;
+}
+
+@media (max-width: 720px) {
+  .pw-wall-stage {
+    height: min(72vh, 560px);
+  }
+  .pw-arrow {
+    width: 38px;
+    height: 52px;
+  }
+  .pw-hud {
+    display: none;
+  }
 }

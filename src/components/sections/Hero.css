@@ -49,8 +49,10 @@
 }
 
 .hero-title {
-  font-size: clamp(58px, 10.5vw, 148px);
+  font-size: clamp(54px, 9.2vw, 128px);
   margin-bottom: 12px;
+  /* soft plate behind the glyphs so they stay legible over the scene */
+  text-shadow: 0 2px 24px rgba(10, 10, 12, 0.85);
 }
 
 .hero-title--variable {

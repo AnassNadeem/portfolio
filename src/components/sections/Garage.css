@@ -40,29 +40,34 @@
   color: var(--text);
 }
 
-.garage-doors {
+/* ── laser scan reveal ── */
+.garage-boot {
   position: absolute;
   inset: 0;
   z-index: 5;
-  display: flex;
   pointer-events: none;
-  transform-origin: top center;
+  overflow: hidden;
 }
 
-.garage-door {
-  flex: 1;
-  background: linear-gradient(180deg, #0e0e12 0%, #121217 100%);
-  border-bottom: 2px solid var(--line);
-  transform-origin: top center;
-}
-
-.garage-door--left {
-  border-right: 1px solid var(--line);
-  box-shadow: inset -20px 0 40px rgba(0, 0, 0, 0.5);
-}
-
-.garage-door--right {
-  box-shadow: inset 20px 0 40px rgba(0, 0, 0, 0.5);
+.garage-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -8%;
+  height: 4px;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--accent-rgb), 0.85) 28%,
+    #fff 50%,
+    rgba(var(--accent-rgb), 0.85) 72%,
+    transparent
+  );
+  box-shadow:
+    0 0 34px 8px rgba(var(--accent-rgb), 0.55),
+    0 0 80px 20px rgba(var(--accent-rgb), 0.15);
+  will-change: top, opacity;
 }
 
 .garage-head {
@@ -222,6 +227,13 @@
   font-size: 9px;
   color: var(--text-faint);
   letter-spacing: 0.2em;
+}
+
+/* the reveal is a scroll-scrubbed desktop moment — never block content elsewhere */
+@media (max-width: 860px), (prefers-reduced-motion: reduce) {
+  .garage-boot {
+    display: none;
+  }
 }
 
 @media (max-width: 860px) {
