@@ -68,33 +68,72 @@ function Part({
   );
 }
 
+/** 18-inch style wheel: slick tire, deep-dish rim, radial spokes, compound ring */
 function WheelMeshes({
   width,
   tire,
   rim,
+  rimDark,
   ring,
+  accentMat,
 }: {
   width: number;
   tire: THREE.Material;
   rim: THREE.Material;
+  rimDark: THREE.Material;
   ring: THREE.Material;
+  accentMat: THREE.Material;
 }) {
+  const spokes = useMemo(() => {
+    const arr: { rot: number }[] = [];
+    for (let i = 0; i < 6; i++) arr.push({ rot: (i / 6) * Math.PI * 2 });
+    return arr;
+  }, []);
   return (
     <>
+      {/* tire */}
       <mesh rotation={[Math.PI / 2, 0, 0]} material={tire} castShadow>
-        <cylinderGeometry args={[WHEEL_R, WHEEL_R, width, 28]} />
+        <cylinderGeometry args={[WHEEL_R, WHEEL_R, width, 32]} />
       </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]} material={rim}>
-        <cylinderGeometry args={[WHEEL_R * 0.6, WHEEL_R * 0.6, width + 0.02, 20]} />
+      {/* rounded shoulders */}
+      <mesh position={[0, 0, width / 2 - 0.035]} material={tire}>
+        <torusGeometry args={[WHEEL_R - 0.035, 0.038, 8, 32]} />
       </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]} material={rim}>
-        <cylinderGeometry args={[WHEEL_R * 0.18, WHEEL_R * 0.18, width + 0.05, 12]} />
+      <mesh position={[0, 0, -(width / 2 - 0.035)]} material={tire}>
+        <torusGeometry args={[WHEEL_R - 0.035, 0.038, 8, 32]} />
       </mesh>
-      <mesh position={[0, 0, width / 2 + 0.002]} material={ring}>
-        <torusGeometry args={[WHEEL_R * 0.8, 0.013, 6, 40]} />
+      {/* rim barrel */}
+      <mesh rotation={[Math.PI / 2, 0, 0]} material={rimDark}>
+        <cylinderGeometry args={[WHEEL_R * 0.62, WHEEL_R * 0.62, width * 0.94, 24]} />
       </mesh>
-      <mesh position={[0, 0, -(width / 2 + 0.002)]} material={ring}>
-        <torusGeometry args={[WHEEL_R * 0.8, 0.013, 6, 40]} />
+      {/* outer rim lips */}
+      <mesh position={[0, 0, width / 2 - 0.008]} material={rim}>
+        <torusGeometry args={[WHEEL_R * 0.6, 0.02, 6, 28]} />
+      </mesh>
+      <mesh position={[0, 0, -(width / 2 - 0.008)]} material={rim}>
+        <torusGeometry args={[WHEEL_R * 0.6, 0.02, 6, 28]} />
+      </mesh>
+      {/* radial spokes, both faces */}
+      {spokes.map((s, i) => (
+        <group key={i} rotation={[0, 0, s.rot]}>
+          <mesh position={[0, WHEEL_R * 0.31, width / 2 - 0.03]} material={rim}>
+            <boxGeometry args={[0.045, WHEEL_R * 0.52, 0.035]} />
+          </mesh>
+          <mesh position={[0, WHEEL_R * 0.31, -(width / 2 - 0.03)]} material={rim}>
+            <boxGeometry args={[0.045, WHEEL_R * 0.52, 0.035]} />
+          </mesh>
+        </group>
+      ))}
+      {/* center-lock nut */}
+      <mesh rotation={[Math.PI / 2, 0, 0]} material={accentMat}>
+        <cylinderGeometry args={[0.075, 0.075, width + 0.06, 12]} />
+      </mesh>
+      {/* tyre-compound rings */}
+      <mesh position={[0, 0, width / 2 + 0.004]} material={ring}>
+        <torusGeometry args={[WHEEL_R * 0.82, 0.014, 6, 44]} />
+      </mesh>
+      <mesh position={[0, 0, -(width / 2 + 0.004)]} material={ring}>
+        <torusGeometry args={[WHEEL_R * 0.82, 0.014, 6, 44]} />
       </mesh>
     </>
   );
@@ -104,7 +143,7 @@ function Strut({
   from,
   to,
   material,
-  radius = 0.024,
+  radius = 0.022,
 }: {
   from: [number, number, number];
   to: [number, number, number];
@@ -127,6 +166,7 @@ function Strut({
   }, [from, to]);
   return (
     <mesh position={position} quaternion={quaternion} material={material}>
+      {/* aero-profile wishbone: flattened cylinder reads as an airfoil */}
       <cylinderGeometry args={[radius, radius, length, 6]} />
     </mesh>
   );
@@ -199,25 +239,107 @@ export default function F1Car({
   );
 
   const mats = useMemo(() => {
-    const livery = new THREE.MeshStandardMaterial({
+    // Clearcoat paint — reads as real automotive lacquer under the lightformers
+    const livery = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(accent),
-      metalness: 0.55,
-      roughness: 0.24,
+      metalness: 0.72,
+      roughness: 0.32,
+      clearcoat: 1,
+      clearcoatRoughness: 0.12,
     });
-    const carbon = new THREE.MeshStandardMaterial({ color: "#16161b", metalness: 0.4, roughness: 0.48 });
-    const dark = new THREE.MeshStandardMaterial({ color: "#0e0e11", metalness: 0.3, roughness: 0.42 });
-    const tire = new THREE.MeshStandardMaterial({ color: "#0b0b0d", metalness: 0, roughness: 0.96 });
-    const rim = new THREE.MeshStandardMaterial({ color: "#26262e", metalness: 0.9, roughness: 0.32 });
+    const liveryDark = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(accent).multiplyScalar(0.55),
+      metalness: 0.7,
+      roughness: 0.38,
+      clearcoat: 0.8,
+      clearcoatRoughness: 0.2,
+    });
+    const carbon = new THREE.MeshStandardMaterial({ color: "#141419", metalness: 0.46, roughness: 0.42 });
+    const dark = new THREE.MeshStandardMaterial({ color: "#0d0d10", metalness: 0.32, roughness: 0.44 });
+    const tire = new THREE.MeshStandardMaterial({ color: "#0b0b0d", metalness: 0, roughness: 0.95 });
+    const rim = new THREE.MeshStandardMaterial({ color: "#2e2e38", metalness: 0.92, roughness: 0.26 });
+    const rimDark = new THREE.MeshStandardMaterial({ color: "#17171c", metalness: 0.85, roughness: 0.35 });
     const ring = new THREE.MeshBasicMaterial({ color: new THREE.Color(accent) });
-    return { livery, carbon, dark, tire, rim, ring };
+    const accentMetal = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(accent),
+      metalness: 0.9,
+      roughness: 0.3,
+    });
+    const helmet = new THREE.MeshPhysicalMaterial({
+      color: "#f5f5f7",
+      metalness: 0.35,
+      roughness: 0.25,
+      clearcoat: 1,
+      clearcoatRoughness: 0.08,
+    });
+    const visor = new THREE.MeshStandardMaterial({ color: "#0a0a0e", metalness: 1, roughness: 0.08 });
+    return { livery, liveryDark, carbon, dark, tire, rim, rimDark, ring, accentMetal, helmet, visor };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     const c = new THREE.Color(accent);
+    const cd = new THREE.Color(accent).multiplyScalar(0.55);
     gsap.to(mats.livery.color, { r: c.r, g: c.g, b: c.b, duration: 0.6, ease: "power2.out" });
+    gsap.to(mats.liveryDark.color, { r: cd.r, g: cd.g, b: cd.b, duration: 0.6, ease: "power2.out" });
     gsap.to(mats.ring.color, { r: c.r, g: c.g, b: c.b, duration: 0.6, ease: "power2.out" });
+    gsap.to(mats.accentMetal.color, { r: c.r, g: c.g, b: c.b, duration: 0.6, ease: "power2.out" });
   }, [accent, mats]);
+
+  /* ── sculpted geometry (all procedural, no assets) ── */
+  const geo = useMemo(() => {
+    // Wide flat shovel nose — no pointed peak at the tip
+    const nosePts: THREE.Vector2[] = [
+      new THREE.Vector2(0.11, 0),
+      new THREE.Vector2(0.11, 0.22),
+      new THREE.Vector2(0.1, 0.48),
+      new THREE.Vector2(0.085, 0.68),
+    ];
+    const nose = new THREE.LatheGeometry(nosePts, 20);
+
+    // Coke-bottle engine cover — lathe, squashed sideways
+    const coverPts: THREE.Vector2[] = [
+      new THREE.Vector2(0.02, 0),
+      new THREE.Vector2(0.09, 0.3),
+      new THREE.Vector2(0.17, 0.75),
+      new THREE.Vector2(0.24, 1.3),
+      new THREE.Vector2(0.28, 1.85),
+    ];
+    const cover = new THREE.LatheGeometry(coverPts, 18);
+
+    // Halo — swept tube on a closed loop around the cockpit
+    const haloCurve = new THREE.CatmullRomCurve3(
+      [
+        new THREE.Vector3(0.05, 1.04, 0.0),
+        new THREE.Vector3(0.18, 1.03, 0.4),
+        new THREE.Vector3(0.6, 0.99, 0.45),
+        new THREE.Vector3(0.95, 0.93, 0.0),
+        new THREE.Vector3(0.6, 0.99, -0.45),
+        new THREE.Vector3(0.18, 1.03, -0.4),
+      ],
+      true,
+      "catmullrom",
+      0.35
+    );
+    const halo = new THREE.TubeGeometry(haloCurve, 48, 0.036, 10, true);
+
+    // Sidepod — extruded rounded profile with undercut
+    const podShape = new THREE.Shape();
+    podShape.moveTo(0, 0.06); // bottom front (undercut lifted off floor)
+    podShape.lineTo(0.05, 0.42); // inlet face
+    podShape.bezierCurveTo(-0.35, 0.48, -1.1, 0.42, -1.7, 0.18); // downwash top line
+    podShape.lineTo(-1.7, 0.1);
+    podShape.bezierCurveTo(-1.1, 0.02, -0.45, 0.0, 0, 0.06); // belly
+    const pod = new THREE.ExtrudeGeometry(podShape, {
+      depth: 0.52,
+      bevelEnabled: true,
+      bevelThickness: 0.06,
+      bevelSize: 0.06,
+      bevelSegments: 3,
+    });
+
+    return { nose, cover, halo, pod };
+  }, []);
 
   const numberTex = useMemo(() => {
     const c = document.createElement("canvas");
@@ -444,6 +566,39 @@ export default function F1Car({
     <meshBasicMaterial map={tex} transparent depthWrite={false} polygonOffset polygonOffsetFactor={-1} />
   );
 
+  /** One sidepod assembly (sign = ±1 for left/right) */
+  const sidepod = (sign: number) => (
+    <group>
+      {/* sculpted pod body — extruded undercut profile */}
+      <mesh
+        geometry={geo.pod}
+        material={mats.livery}
+        position={[0.72, 0.18, sign * 0.42 - (sign > 0 ? 0 : 0.52)]}
+        castShadow
+      />
+      {/* radiator inlet — dark, high on the pod face */}
+      <mesh position={[0.78, 0.5, sign * 0.68]} material={mats.dark}>
+        <boxGeometry args={[0.1, 0.24, 0.42]} />
+      </mesh>
+      {/* inlet lip */}
+      <mesh position={[0.82, 0.64, sign * 0.68]} material={mats.liveryDark}>
+        <boxGeometry args={[0.14, 0.05, 0.48]} />
+      </mesh>
+      {/* undercut shadow panel */}
+      <mesh position={[0.45, 0.22, sign * 0.58]} material={mats.carbon}>
+        <boxGeometry args={[0.7, 0.22, 0.3]} />
+      </mesh>
+      {/* driver name decal along the pod flank */}
+      <mesh
+        position={[0.05, 0.42, sign * 0.985]}
+        rotation={[0, sign > 0 ? 0 : Math.PI, sign > 0 ? -0.045 : 0.045]}
+      >
+        <planeGeometry args={[1.35, 0.24]} />
+        {decal(nameTex)}
+      </mesh>
+    </group>
+  );
+
   return (
     <group ref={driveOutRef}>
       <group ref={driveInRef} position={isHero ? [-15, 0, 0] : [0, 0, 0]}>
@@ -453,156 +608,245 @@ export default function F1Car({
             <group ref={bodyRef}>
               {/* FLOOR + plank + suspension → "INFRA & TOOLING" */}
               <Part id="floor" explodeRef={explodeRef} onPart={onPart}>
-                <mesh position={[0.1, 0.16, 0]} material={mats.dark} castShadow>
-                  <boxGeometry args={[4.7, 0.07, 1.42]} />
+                {/* wide ground-effect floor */}
+                <mesh position={[0.05, 0.15, 0]} material={mats.dark} castShadow>
+                  <boxGeometry args={[4.2, 0.06, 1.5]} />
                 </mesh>
-                <Strut from={[1.45, 0.52, 0.26]} to={[1.78, 0.46, 0.74]} material={mats.carbon} />
-                <Strut from={[1.45, 0.52, -0.26]} to={[1.78, 0.46, -0.74]} material={mats.carbon} />
-                <Strut from={[1.45, 0.3, 0.26]} to={[1.78, 0.34, 0.74]} material={mats.carbon} />
-                <Strut from={[1.45, 0.3, -0.26]} to={[1.78, 0.34, -0.74]} material={mats.carbon} />
-                <Strut from={[-1.4, 0.52, 0.26]} to={[-1.72, 0.46, 0.76]} material={mats.carbon} />
-                <Strut from={[-1.4, 0.52, -0.26]} to={[-1.72, 0.46, -0.76]} material={mats.carbon} />
-                <Strut from={[-1.4, 0.3, 0.26]} to={[-1.72, 0.34, 0.76]} material={mats.carbon} />
-                <Strut from={[-1.4, 0.3, -0.26]} to={[-1.72, 0.34, -0.76]} material={mats.carbon} />
+                {/* floor edge wings */}
+                <mesh position={[0.35, 0.2, 0.79]} material={mats.carbon}>
+                  <boxGeometry args={[2.1, 0.025, 0.09]} />
+                </mesh>
+                <mesh position={[0.35, 0.2, -0.79]} material={mats.carbon}>
+                  <boxGeometry args={[2.1, 0.025, 0.09]} />
+                </mesh>
+                {/* plank / skid block */}
+                <mesh position={[0.2, 0.11, 0]} material={mats.carbon}>
+                  <boxGeometry args={[3.0, 0.03, 0.42]} />
+                </mesh>
+                {/* bargeboard blades at the pod inlets */}
+                <mesh position={[1.06, 0.3, 0.62]} rotation={[0, 0.5, 0]} material={mats.carbon}>
+                  <boxGeometry args={[0.3, 0.24, 0.02]} />
+                </mesh>
+                <mesh position={[1.06, 0.3, -0.62]} rotation={[0, -0.5, 0]} material={mats.carbon}>
+                  <boxGeometry args={[0.3, 0.24, 0.02]} />
+                </mesh>
+                {/* pushrod suspension — front */}
+                <Strut from={[1.5, 0.56, 0.24]} to={[1.78, 0.5, 0.72]} material={mats.carbon} />
+                <Strut from={[1.5, 0.56, -0.24]} to={[1.78, 0.5, -0.72]} material={mats.carbon} />
+                <Strut from={[1.32, 0.3, 0.24]} to={[1.78, 0.34, 0.72]} material={mats.carbon} />
+                <Strut from={[1.32, 0.3, -0.24]} to={[1.78, 0.34, -0.72]} material={mats.carbon} />
+                <Strut from={[1.62, 0.3, 0.24]} to={[1.86, 0.42, 0.7]} material={mats.carbon} radius={0.016} />
+                <Strut from={[1.62, 0.3, -0.24]} to={[1.86, 0.42, -0.7]} material={mats.carbon} radius={0.016} />
+                {/* rear */}
+                <Strut from={[-1.42, 0.56, 0.22]} to={[-1.72, 0.48, 0.74]} material={mats.carbon} />
+                <Strut from={[-1.42, 0.56, -0.22]} to={[-1.72, 0.48, -0.74]} material={mats.carbon} />
+                <Strut from={[-1.42, 0.3, 0.22]} to={[-1.72, 0.34, 0.74]} material={mats.carbon} />
+                <Strut from={[-1.42, 0.3, -0.22]} to={[-1.72, 0.34, -0.74]} material={mats.carbon} />
               </Part>
 
               {/* NOSE + MONOCOQUE → "CORE LANGUAGES" */}
               <Part id="nose" explodeRef={explodeRef} onPart={onPart}>
+                {/* blunt shovel nose — flat tip, no needle peak */}
                 <mesh
-                  position={[1.95, 0.5, 0]}
-                  rotation={[0, 0, -Math.PI / 2]}
-                  scale={[1, 1, 1.45]}
+                  geometry={geo.nose}
+                  position={[2.08, 0.42, 0]}
+                  rotation={[0, 0, -Math.PI / 2 - 0.04]}
+                  scale={[1, 1, 1.22]}
                   material={mats.livery}
                   castShadow
-                >
-                  <cylinderGeometry args={[0.09, 0.27, 1.75, 16]} />
+                />
+                {/* monocoque tub */}
+                <mesh position={[0.62, 0.5, 0]} material={mats.livery} castShadow>
+                  <boxGeometry args={[1.7, 0.4, 0.64]} />
                 </mesh>
-                <mesh position={[0.72, 0.55, 0]} material={mats.livery} castShadow>
-                  <boxGeometry args={[1.75, 0.5, 0.68]} />
+                <mesh position={[1.22, 0.51, 0]} rotation={[0, 0, -0.02]} scale={[1, 0.88, 0.88]} material={mats.livery}>
+                  <boxGeometry args={[0.72, 0.38, 0.64]} />
                 </mesh>
-                <mesh position={[0.62, 0.82, 0]} material={mats.dark}>
-                  <boxGeometry args={[0.78, 0.16, 0.46]} />
+                {/* raised cockpit sides */}
+                <mesh position={[0.32, 0.74, 0.24]} material={mats.livery}>
+                  <boxGeometry args={[0.85, 0.14, 0.16]} />
                 </mesh>
-                <mesh position={[0.16, 0.86, 0]} material={mats.carbon}>
-                  <boxGeometry args={[0.32, 0.18, 0.46]} />
+                <mesh position={[0.32, 0.74, -0.24]} material={mats.livery}>
+                  <boxGeometry args={[0.85, 0.14, 0.16]} />
                 </mesh>
-                {/* mirrors */}
-                <mesh position={[0.98, 0.92, 0.5]} material={mats.carbon}>
-                  <boxGeometry args={[0.1, 0.07, 0.16]} />
+                {/* cockpit opening */}
+                <mesh position={[0.42, 0.74, 0]} material={mats.dark}>
+                  <boxGeometry args={[0.72, 0.1, 0.34]} />
                 </mesh>
-                <mesh position={[0.98, 0.92, -0.5]} material={mats.carbon}>
-                  <boxGeometry args={[0.1, 0.07, 0.16]} />
+                {/* headrest */}
+                <mesh position={[0.06, 0.79, 0]} material={mats.liveryDark}>
+                  <boxGeometry args={[0.26, 0.12, 0.4]} />
                 </mesh>
+                {/* driver helmet + visor */}
+                <mesh position={[0.36, 0.83, 0]} material={mats.helmet} castShadow>
+                  <sphereGeometry args={[0.13, 20, 16]} />
+                </mesh>
+                <mesh position={[0.47, 0.84, 0]} rotation={[0, 0, -0.2]} material={mats.visor}>
+                  <boxGeometry args={[0.05, 0.07, 0.16]} />
+                </mesh>
+                {/* wing mirrors on stalks */}
+                <mesh position={[0.88, 0.86, 0.46]} material={mats.carbon}>
+                  <boxGeometry args={[0.11, 0.06, 0.15]} />
+                </mesh>
+                <mesh position={[0.88, 0.86, -0.46]} material={mats.carbon}>
+                  <boxGeometry args={[0.11, 0.06, 0.15]} />
+                </mesh>
+                <Strut from={[0.88, 0.72, 0.32]} to={[0.88, 0.84, 0.44]} material={mats.carbon} radius={0.012} />
+                <Strut from={[0.88, 0.72, -0.32]} to={[0.88, 0.84, -0.44]} material={mats.carbon} radius={0.012} />
                 {/* race number on the nose */}
-                <mesh position={[1.66, 0.71, 0]} rotation={[-Math.PI / 2, 0, Math.PI / 2]}>
-                  <planeGeometry args={[0.46, 0.46]} />
+                <mesh position={[1.78, 0.63, 0]} rotation={[-Math.PI / 2, 0, Math.PI / 2]}>
+                  <planeGeometry args={[0.42, 0.42]} />
                   <meshBasicMaterial map={numberTex} transparent depthWrite={false} />
                 </mesh>
               </Part>
 
               {/* HALO → "TESTING & SAFETY" */}
               <Part id="halo" explodeRef={explodeRef} onPart={onPart}>
-                <mesh position={[0.58, 1.0, 0]} rotation={[Math.PI / 2, 0, 0]} material={mats.carbon}>
-                  <torusGeometry args={[0.37, 0.034, 8, 28]} />
-                </mesh>
-                <mesh position={[0.93, 0.83, 0]} rotation={[0, 0, 0.25]} material={mats.carbon}>
-                  <cylinderGeometry args={[0.028, 0.028, 0.42, 8]} />
-                </mesh>
+                <mesh geometry={geo.halo} material={mats.carbon} castShadow />
+                {/* central front pylon */}
+                <Strut from={[0.95, 0.93, 0]} to={[0.98, 0.6, 0]} material={mats.carbon} radius={0.026} />
               </Part>
 
               {/* ENGINE COVER + airbox + fin → "AI & DATA" */}
               <Part id="power" explodeRef={explodeRef} onPart={onPart}>
-                <mesh position={[-0.08, 1.04, 0]} material={mats.carbon} castShadow>
-                  <boxGeometry args={[0.52, 0.3, 0.4]} />
+                {/* coke-bottle spine tapering to the tail */}
+                <mesh
+                  geometry={geo.cover}
+                  position={[-1.95, 0.72, 0]}
+                  rotation={[0, 0, -Math.PI / 2 + 0.045]}
+                  scale={[1, 1, 0.78]}
+                  material={mats.livery}
+                  castShadow
+                />
+                {/* airbox intake over the cockpit */}
+                <mesh position={[-0.02, 1.02, 0]} rotation={[0, 0, -Math.PI / 2]} material={mats.livery}>
+                  <cylinderGeometry args={[0.15, 0.19, 0.4, 14]} />
                 </mesh>
-                <mesh position={[-0.78, 0.74, 0]} material={mats.livery} castShadow>
-                  <boxGeometry args={[1.95, 0.42, 0.5]} />
+                <mesh position={[0.19, 1.02, 0]} rotation={[0, 0, Math.PI / 2]} material={mats.dark}>
+                  <cylinderGeometry args={[0.115, 0.115, 0.03, 14]} />
                 </mesh>
-                <mesh position={[-1.5, 1.0, 0]} material={mats.livery}>
-                  <boxGeometry args={[1.15, 0.5, 0.035]} />
+                {/* roll hoop blade */}
+                <mesh position={[-0.14, 1.16, 0]} rotation={[0, 0, 0.25]} material={mats.carbon}>
+                  <boxGeometry args={[0.34, 0.1, 0.05]} />
                 </mesh>
-                <mesh position={[-0.08, 1.26, 0]} material={mats.ring}>
-                  <boxGeometry args={[0.16, 0.1, 0.12]} />
+                {/* shark fin */}
+                <mesh position={[-1.45, 1.0, 0]} rotation={[0, 0, 0.1]} material={mats.livery}>
+                  <boxGeometry args={[1.1, 0.42, 0.028]} />
+                </mesh>
+                {/* number decals on the fin */}
+                <mesh position={[-1.45, 1.02, 0.02]} rotation={[0, 0, 0.1]}>
+                  <planeGeometry args={[0.44, 0.28]} />
+                  {decal(numSmallTex)}
+                </mesh>
+                <mesh position={[-1.45, 1.02, -0.02]} rotation={[0, Math.PI, -0.1]}>
+                  <planeGeometry args={[0.44, 0.28]} />
+                  {decal(numSmallTex)}
+                </mesh>
+                {/* T-cam */}
+                <mesh position={[-0.02, 1.27, 0]} material={mats.accentMetal}>
+                  <boxGeometry args={[0.15, 0.09, 0.11]} />
+                </mesh>
+                {/* exhaust tip */}
+                <mesh position={[-2.16, 0.62, 0]} rotation={[0, 0, Math.PI / 2]} material={mats.dark}>
+                  <cylinderGeometry args={[0.05, 0.06, 0.22, 12]} />
                 </mesh>
               </Part>
 
               {/* SIDEPODS → "APIs & SERVICES" */}
               <Part id="sidepods" explodeRef={explodeRef} offset={[0, 0, 1.15]} onPart={onPart}>
-                <mesh position={[-0.35, 0.49, 0.72]} material={mats.livery} castShadow>
-                  <boxGeometry args={[1.85, 0.46, 0.58]} />
-                </mesh>
-                <mesh position={[0.56, 0.52, 0.72]} material={mats.dark}>
-                  <boxGeometry args={[0.16, 0.34, 0.5]} />
-                </mesh>
-                <mesh position={[-0.35, 0.52, 1.012]}>
-                  <planeGeometry args={[1.45, 0.28]} />
-                  {decal(nameTex)}
-                </mesh>
+                {sidepod(1)}
               </Part>
               <Part id="sidepods" explodeRef={explodeRef} offset={[0, 0, -1.15]} onPart={onPart}>
-                <mesh position={[-0.35, 0.49, -0.72]} material={mats.livery} castShadow>
-                  <boxGeometry args={[1.85, 0.46, 0.58]} />
-                </mesh>
-                <mesh position={[0.56, 0.52, -0.72]} material={mats.dark}>
-                  <boxGeometry args={[0.16, 0.34, 0.5]} />
-                </mesh>
-                <mesh position={[-0.35, 0.52, -1.012]} rotation={[0, Math.PI, 0]}>
-                  <planeGeometry args={[1.45, 0.28]} />
-                  {decal(nameTex)}
-                </mesh>
+                {sidepod(-1)}
               </Part>
 
               {/* FRONT WING → "FRONTEND" */}
               <Part id="frontwing" explodeRef={explodeRef} onPart={onPart}>
-                <mesh position={[2.55, 0.14, 0]} material={mats.carbon} castShadow>
-                  <boxGeometry args={[0.55, 0.045, 1.95]} />
+                {/* flat wide front wing — low profile, no upward peak */}
+                <mesh position={[2.22, 0.1, 0]} material={mats.carbon} castShadow>
+                  <boxGeometry args={[0.48, 0.028, 2.0]} />
                 </mesh>
-                <mesh position={[2.4, 0.26, 0]} rotation={[0, 0, 0.16]} material={mats.livery}>
-                  <boxGeometry args={[0.4, 0.04, 1.85]} />
+                <mesh position={[2.16, 0.14, 0]} rotation={[0, 0, 0.06]} material={mats.livery}>
+                  <boxGeometry args={[0.38, 0.026, 1.92]} />
                 </mesh>
-                <mesh position={[2.5, 0.27, 0.98]} material={mats.carbon}>
-                  <boxGeometry args={[0.6, 0.3, 0.04]} />
+                <mesh position={[2.12, 0.18, 0]} rotation={[0, 0, 0.1]} material={mats.carbon}>
+                  <boxGeometry args={[0.3, 0.022, 1.78]} />
                 </mesh>
-                <mesh position={[2.5, 0.27, -0.98]} material={mats.carbon}>
-                  <boxGeometry args={[0.6, 0.3, 0.04]} />
+                {/* endplates */}
+                <mesh position={[2.18, 0.2, 1.0]} rotation={[0, 0.12, 0]} material={mats.carbon}>
+                  <boxGeometry args={[0.52, 0.28, 0.035]} />
                 </mesh>
+                <mesh position={[2.18, 0.2, -1.0]} rotation={[0, -0.12, 0]} material={mats.carbon}>
+                  <boxGeometry args={[0.52, 0.28, 0.035]} />
+                </mesh>
+                <mesh position={[2.16, 0.32, 0.94]} rotation={[0.35, 0.12, 0]} material={mats.liveryDark}>
+                  <boxGeometry args={[0.42, 0.02, 0.14]} />
+                </mesh>
+                <mesh position={[2.16, 0.32, -0.94]} rotation={[-0.35, -0.12, 0]} material={mats.liveryDark}>
+                  <boxGeometry args={[0.42, 0.02, 0.14]} />
+                </mesh>
+                <Strut from={[2.2, 0.28, 0.1]} to={[2.22, 0.12, 0.1]} material={mats.carbon} radius={0.018} />
+                <Strut from={[2.2, 0.28, -0.1]} to={[2.22, 0.12, -0.1]} material={mats.carbon} radius={0.018} />
               </Part>
 
-              {/* REAR WING + crash structure → "SHIPPING & DELIVERY" */}
+              {/* REAR WING + beam wing + diffuser → "SHIPPING & DELIVERY" */}
               <Part id="rearwing" explodeRef={explodeRef} onPart={onPart}>
-                <mesh position={[-2.28, 0.45, 0]} rotation={[0, 0, -Math.PI / 2]} material={mats.carbon}>
-                  <cylinderGeometry args={[0.07, 0.15, 0.85, 10]} />
+                {/* endplates */}
+                <mesh position={[-2.28, 0.92, 0.76]} material={mats.carbon} castShadow>
+                  <boxGeometry args={[0.8, 0.62, 0.04]} />
                 </mesh>
-                <mesh position={[-2.25, 1.12, 0]} rotation={[0, 0, -0.18]} material={mats.livery} castShadow>
-                  <boxGeometry args={[0.5, 0.05, 1.5]} />
+                <mesh position={[-2.28, 0.92, -0.76]} material={mats.carbon} castShadow>
+                  <boxGeometry args={[0.8, 0.62, 0.04]} />
                 </mesh>
-                <mesh position={[-2.32, 0.76, 0]} material={mats.carbon}>
-                  <boxGeometry args={[0.36, 0.04, 1.3]} />
+                {/* main plane */}
+                <mesh position={[-2.26, 1.02, 0]} rotation={[0, 0, -0.14]} material={mats.livery} castShadow>
+                  <boxGeometry args={[0.44, 0.045, 1.5]} />
                 </mesh>
-                <mesh position={[-2.25, 0.94, 0.76]} material={mats.carbon}>
-                  <boxGeometry args={[0.75, 0.52, 0.045]} />
+                {/* DRS flap, opened slightly */}
+                <mesh position={[-2.42, 1.16, 0]} rotation={[0, 0, -0.42]} material={mats.carbon}>
+                  <boxGeometry args={[0.3, 0.032, 1.48]} />
                 </mesh>
-                <mesh position={[-2.25, 0.94, -0.76]} material={mats.carbon}>
-                  <boxGeometry args={[0.75, 0.52, 0.045]} />
+                {/* DRS actuator pod */}
+                <mesh position={[-2.34, 1.13, 0]} material={mats.dark}>
+                  <boxGeometry args={[0.16, 0.08, 0.1]} />
                 </mesh>
+                {/* swan-neck mounts */}
+                <Strut from={[-1.86, 0.92, 0.22]} to={[-2.3, 1.2, 0.22]} material={mats.carbon} radius={0.02} />
+                <Strut from={[-1.86, 0.92, -0.22]} to={[-2.3, 1.2, -0.22]} material={mats.carbon} radius={0.02} />
+                {/* beam wing — two elements */}
+                <mesh position={[-2.3, 0.62, 0]} rotation={[0, 0, -0.28]} material={mats.carbon}>
+                  <boxGeometry args={[0.26, 0.03, 1.3]} />
+                </mesh>
+                <mesh position={[-2.38, 0.5, 0]} rotation={[0, 0, -0.14]} material={mats.liveryDark}>
+                  <boxGeometry args={[0.24, 0.03, 1.3]} />
+                </mesh>
+                {/* diffuser — kicked-up expansion with strakes */}
+                <mesh position={[-1.98, 0.26, 0]} rotation={[0, 0, -0.38]} material={mats.dark}>
+                  <boxGeometry args={[0.66, 0.035, 1.34]} />
+                </mesh>
+                {[-0.45, -0.15, 0.15, 0.45].map((z) => (
+                  <mesh key={z} position={[-2.02, 0.3, z]} rotation={[0, 0, -0.38]} material={mats.carbon}>
+                    <boxGeometry args={[0.55, 0.16, 0.02]} />
+                  </mesh>
+                ))}
                 {/* endplate number decals */}
-                <mesh position={[-2.25, 0.96, 0.785]}>
+                <mesh position={[-2.28, 0.94, 0.785]}>
                   <planeGeometry args={[0.5, 0.3]} />
                   {decal(numSmallTex)}
                 </mesh>
-                <mesh position={[-2.25, 0.96, -0.785]} rotation={[0, Math.PI, 0]}>
+                <mesh position={[-2.28, 0.94, -0.785]} rotation={[0, Math.PI, 0]}>
                   <planeGeometry args={[0.5, 0.3]} />
                   {decal(numSmallTex)}
                 </mesh>
                 {/* rain light — blinks under braking */}
-                <mesh position={[-2.6, 0.48, 0]}>
-                  <boxGeometry args={[0.05, 0.2, 0.09]} />
+                <mesh position={[-2.56, 0.44, 0]}>
+                  <boxGeometry args={[0.05, 0.18, 0.08]} />
                   <meshBasicMaterial ref={rainLightMat} color="#ff2a2a" transparent opacity={0.25} />
                 </mesh>
               </Part>
 
               {/* exhaust glow on throttle */}
-              <pointLight ref={exhaustLight} position={[-2.55, 0.55, 0]} color="#ff6a00" intensity={0} distance={2.6} decay={0} />
+              <pointLight ref={exhaustLight} position={[-2.4, 0.6, 0]} color="#ff6a00" intensity={0} distance={2.6} decay={0} />
             </group>
           </group>
 
@@ -632,7 +876,14 @@ export default function F1Car({
                         spinRefs.current[i] = el;
                       }}
                     >
-                      <WheelMeshes width={wp.w} tire={mats.tire} rim={mats.rim} ring={mats.ring} />
+                      <WheelMeshes
+                        width={wp.w}
+                        tire={mats.tire}
+                        rim={mats.rim}
+                        rimDark={mats.rimDark}
+                        ring={mats.ring}
+                        accentMat={mats.accentMetal}
+                      />
                     </group>
                   </group>
                 ) : (
@@ -641,7 +892,14 @@ export default function F1Car({
                       spinRefs.current[i] = el;
                     }}
                   >
-                    <WheelMeshes width={wp.w} tire={mats.tire} rim={mats.rim} ring={mats.ring} />
+                    <WheelMeshes
+                      width={wp.w}
+                      tire={mats.tire}
+                      rim={mats.rim}
+                      rimDark={mats.rimDark}
+                      ring={mats.ring}
+                      accentMat={mats.accentMetal}
+                    />
                   </group>
                 )}
               </group>

@@ -94,7 +94,7 @@ function Turntable({
       {/* glowing rim + inner detail ring */}
       <mesh position={[0, 0.003, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[3.96, 4.1, 80]} />
-        <meshBasicMaterial color={accent} transparent opacity={0.85} />
+        <meshBasicMaterial color={accent} transparent opacity={0.55} />
       </mesh>
       <mesh position={[0, 0.004, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[2.55, 2.6, 64]} />
@@ -286,10 +286,10 @@ export default function GarageScene({
       }}
     >
       <fog attach="fog" args={["#0a0a0c", 11, 30]} />
-      <ambientLight intensity={0.22} />
-      <directionalLight position={[4, 7, 3]} intensity={1.1} />
-      <pointLight position={[-7, 3, -3]} intensity={2.4} color={accent} decay={0} />
-      <pointLight position={[6, 2, 5]} intensity={0.5} color="#7d9bff" decay={0} />
+      <ambientLight intensity={0.28} />
+      <directionalLight position={[4, 7, 3]} intensity={1.25} />
+      <pointLight position={[-7, 3, -3]} intensity={1.5} color={accent} decay={0} />
+      <pointLight position={[6, 2, 5]} intensity={0.6} color="#7d9bff" decay={0} />
 
       <Suspense fallback={null}>
         <Environment preset="warehouse" background={false} blur={0.8} />
