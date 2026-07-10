@@ -2,11 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useApp } from "../context/AppContext";
 import { emit as busEmit } from "../lib/bus";
-import { getBoard, submitScore, personalBest, fmtMs, type Game, type Entry } from "../lib/leaderboard";
+import { getBoard, personalBest, fmtMs, type Game, type Entry } from "../lib/leaderboard";
 import { takePending } from "../lib/podium-bridge";
 import { supabaseReady } from "../lib/supabase";
 import { playShift } from "../lib/sound";
 import GridRunGame from "./games/GridRunGame";
+import SubmitScore from "./SubmitScore";
 import "./GameCenter.css";
 
 const TABS: { id: Game | "ranks"; label: string }[] = [
@@ -16,129 +17,6 @@ const TABS: { id: Game | "ranks"; label: string }[] = [
   { id: "gridrun", label: "GRID RUN" },
   { id: "ranks", label: "RANKS" },
 ];
-
-/** initials + optional email opt-in — arcade style */
-function SubmitScore({ game, ms, onDone }: { game: Game; ms: number; onDone: () => void }) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [consent, setConsent] = useState(false);
-  const [emailErr, setEmailErr] = useState("");
-  const [saved, setSaved] = useState(false);
-  const [savedPermanently, setSavedPermanently] = useState(false);
-  const [alreadyIn, setAlreadyIn] = useState(false);
-  // Guard against double-submit: setState is async, so a fast double-click can
-  // slip two inserts through before `saved` flips. A ref blocks synchronously.
-  const submitting = useRef(false);
-
-  const save = async () => {
-    if (saved || submitting.current) return;
-
-    // Validate email only when provided
-    const trimmedEmail = email.trim();
-    if (trimmedEmail) {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-        setEmailErr("INVALID EMAIL FORMAT");
-        return;
-      }
-      if (!consent) {
-        setEmailErr("TICK THE BOX TO JOIN THE GRID");
-        return;
-      }
-    }
-    setEmailErr("");
-    submitting.current = true;
-
-    const result = await submitScore(game, {
-      name: name || "AAA",
-      ms,
-      email: trimmedEmail || undefined,
-      consent: trimmedEmail ? consent : false,
-    });
-
-    setSaved(true);
-    setSavedPermanently(Boolean(result.savedPermanently));
-    if (result.alreadySignedUp) setAlreadyIn(true);
-    setTimeout(onDone, 1400);
-  };
-
-  const showSignup = supabaseReady;
-  const hasEmail = email.trim().length > 0;
-
-  return (
-    <div className="gc-submit">
-      <div className="gc-submit-time display">{fmtMs(ms, game)}</div>
-
-      <div className="gc-submit-row">
-        <label className="mono" htmlFor="gc-initials">INITIALS</label>
-        <input
-          id="gc-initials"
-          className="gc-initials"
-          value={name}
-          maxLength={3}
-          placeholder="AAA"
-          onChange={(e) => setName(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
-          autoComplete="off"
-        />
-      </div>
-
-      {showSignup && (
-        <>
-          <div className="gc-submit-row">
-            <label className="mono" htmlFor="gc-email">EMAIL — OPTIONAL</label>
-            <input
-              id="gc-email"
-              type="email"
-              value={email}
-              placeholder="join the global grid"
-              onChange={(e) => { setEmail(e.target.value); setEmailErr(""); }}
-            />
-          </div>
-
-          {email.trim() && (
-            <label className="gc-consent mono">
-              <input
-                type="checkbox"
-                checked={consent}
-                onChange={(e) => setConsent(e.target.checked)}
-              />
-              {/* Consent must be opt-in (not pre-ticked) — PECR / UK GDPR */}
-              I agree to be contacted about new projects &amp; launches
-            </label>
-          )}
-
-          {emailErr && <p className="gc-fineprint mono" style={{ color: "var(--accent)" }}>{emailErr}</p>}
-        </>
-      )}
-
-      {alreadyIn && (
-        <p className="gc-fineprint mono">ALREADY ON THE GRID — YOUR TIME STILL COUNTS.</p>
-      )}
-
-      {/* Two-tier storage, spelled out so the choice is clear */}
-      {showSignup ? (
-        saved ? (
-          <p className="gc-fineprint mono" style={savedPermanently ? { color: "var(--accent)" } : undefined}>
-            {savedPermanently
-              ? "✓ SAVED PERMANENTLY TO THE GLOBAL GRID."
-              : "✓ RANKED FOR THIS SESSION — ADD EMAIL NEXT TIME TO SAVE IT FOR GOOD."}
-          </p>
-        ) : (
-          <p className="gc-fineprint mono">
-            {hasEmail
-              ? "WITH EMAIL — YOUR TIME IS SAVED PERMANENTLY TO THE GLOBAL GRID."
-              : "NO EMAIL — YOUR TIME RANKS THIS SESSION ONLY, CLEARED ON REFRESH."}
-          </p>
-        )
-      ) : (
-        <p className="gc-fineprint mono">RANKED THIS SESSION ONLY — CLEARED ON REFRESH.</p>
-      )}
-
-      <button className="btn gc-save" onClick={save} disabled={saved} data-cursor="link">
-        <span>{saved ? "POSTED ✓" : hasEmail ? "Save To Global Grid" : "Post Session Time"}</span>
-      </button>
-    </div>
-  );
-}
 
 /** ── GAME 1: LIGHTS OUT (reaction) ── */
 function ReactionGame({ soundOn }: { soundOn: boolean }) {
@@ -178,12 +56,14 @@ function ReactionGame({ soundOn }: { soundOn: boolean }) {
   useEffect(() => () => clearTimeout(timer.current), []);
 
   return (
-    <div className="gc-game">
-      <div className="gc-lights" aria-hidden="true">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <span key={i} className="gc-light" />
-        ))}
-      </div>
+    <div className={`gc-game${state === "done" ? " gc-game--results" : ""}`}>
+      {state !== "done" && (
+        <div className="gc-lights" aria-hidden="true">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <span key={i} className="gc-light" />
+          ))}
+        </div>
+      )}
 
       {state === "idle" && (
         <>
@@ -202,7 +82,20 @@ function ReactionGame({ soundOn }: { soundOn: boolean }) {
           <button className="btn btn--ghost" onClick={arm} data-cursor="link"><span>Again</span></button>
         </>
       )}
-      {state === "done" && <SubmitScore game="reaction" ms={ms} onDone={() => setState("idle")} />}
+      {state === "done" && (
+        <div className="gc-results-split">
+          <div className="gc-results-left">
+            <p className="gc-copy gc-copy--go mono">LIGHTS OUT</p>
+            <div className="gc-results-score display">{fmtMs(ms, "reaction")}</div>
+            <button className="btn btn--ghost" type="button" onClick={arm} data-cursor="link">
+              <span>Run It Again</span>
+            </button>
+          </div>
+          <div className="gc-results-right">
+            <SubmitScore game="reaction" ms={ms} formOnly onDone={() => setState("idle")} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -242,10 +135,9 @@ function PitStopGame({ soundOn }: { soundOn: boolean }) {
   };
 
   return (
-    <div className="gc-game">
+    <div className={`gc-game${state === "done" ? " gc-game--results" : ""}`}>
       {state !== "done" && (
         <div className="gc-pit">
-          {/* top-down car */}
           <svg viewBox="0 0 120 220" className="gc-pit-car" aria-hidden="true">
             <rect x="44" y="6" width="32" height="14" rx="3" fill="#1d1d23" />
             <path d="M 50 24 L 70 24 L 76 96 L 78 196 L 42 196 L 44 96 Z" fill="var(--accent)" />
@@ -276,7 +168,20 @@ function PitStopGame({ soundOn }: { soundOn: boolean }) {
           {penalty > 0 && <span className="gc-copy--warn"> · +{(penalty / 1000).toFixed(1)}s PENALTY</span>}
         </p>
       )}
-      {state === "done" && <SubmitScore game="pitstop" ms={ms} onDone={() => setState("idle")} />}
+      {state === "done" && (
+        <div className="gc-results-split">
+          <div className="gc-results-left">
+            <p className="gc-copy gc-copy--go mono">PIT STOP</p>
+            <div className="gc-results-score display">{fmtMs(ms, "pitstop")}</div>
+            <button className="btn btn--ghost" type="button" onClick={go} data-cursor="link">
+              <span>Run It Again</span>
+            </button>
+          </div>
+          <div className="gc-results-right">
+            <SubmitScore game="pitstop" ms={ms} formOnly onDone={() => setState("idle")} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -325,14 +230,23 @@ function HotLapGame({ close, pendingMs }: { close: () => void; pendingMs: number
 function Ranks() {
   const [game, setGame] = useState<Game>("reaction");
   const [board, setBoard] = useState<Entry[]>([]);
+  const [refresh, setRefresh] = useState(0);
 
-  useEffect(() => {
+  const loadBoard = useCallback(() => {
     let alive = true;
     void getBoard(game).then((b) => alive && setBoard(b));
     return () => {
       alive = false;
     };
   }, [game]);
+
+  useEffect(() => loadBoard(), [loadBoard, refresh]);
+
+  useEffect(() => {
+    const onPosted = () => setRefresh((n) => n + 1);
+    window.addEventListener("apex:score-posted", onPosted);
+    return () => window.removeEventListener("apex:score-posted", onPosted);
+  }, []);
 
   return (
     <div className="gc-game">
@@ -372,7 +286,7 @@ function Ranks() {
       </table>
       <p className="gc-fineprint mono">
         {supabaseReady
-          ? "YOUR TIME RANKS THIS SESSION ONLY — ADD AN EMAIL WHEN POSTING TO SAVE IT TO THE GLOBAL GRID."
+          ? "ONE EMAIL = ONE CALL SIGN FOR ALL GAMES. BOTS ARE FIXED — YOUR TIME NEEDS EMAIL TO SAVE GLOBALLY."
           : "TIMES RANK THIS SESSION ONLY — CLEARED ON REFRESH."}
       </p>
     </div>
@@ -383,6 +297,7 @@ export default function GameCenter() {
   const { gamesOpen, setGamesOpen, soundOn, lenisRef } = useApp();
   const [tab, setTab] = useState<Game | "ranks">("reaction");
   const [pendingMs, setPendingMs] = useState<number | null>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
 
   const close = useCallback(() => setGamesOpen(false), [setGamesOpen]);
 
@@ -406,6 +321,31 @@ export default function GameCenter() {
     };
   }, [gamesOpen, close, lenisRef]);
 
+  // Trackpad / wheel scroll inside the arcade modal (Lenis is paused while open)
+  useEffect(() => {
+    if (!gamesOpen) return;
+    const body = bodyRef.current;
+    if (!body) return;
+
+    const onWheel = (e: WheelEvent) => {
+      if (!body.contains(e.target as Node)) return;
+      e.stopPropagation();
+
+      const { scrollTop, scrollHeight, clientHeight } = body;
+      const maxScroll = scrollHeight - clientHeight;
+      if (maxScroll <= 0) return;
+
+      const atTop = scrollTop <= 0;
+      const atBottom = scrollTop >= maxScroll - 1;
+      if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
+        e.preventDefault();
+      }
+    };
+
+    body.addEventListener("wheel", onWheel, { passive: false, capture: true });
+    return () => body.removeEventListener("wheel", onWheel, { capture: true });
+  }, [gamesOpen, tab]);
+
   return (
     <AnimatePresence>
       {gamesOpen && (
@@ -422,7 +362,7 @@ export default function GameCenter() {
           aria-label="Arcade"
         >
           <motion.div
-            className="gc-modal"
+            className={`gc-modal${tab === "gridrun" ? " gc-modal--gridrun" : ""}`}
             initial={{ y: 50, scale: 0.96, opacity: 0 }}
             animate={{ y: 0, scale: 1, opacity: 1 }}
             exit={{ y: 30, scale: 0.97, opacity: 0 }}
@@ -449,7 +389,7 @@ export default function GameCenter() {
               ))}
             </div>
 
-            <div className="gc-body">
+            <div className="gc-body" ref={bodyRef}>
               {tab === "reaction" && <ReactionGame soundOn={soundOn} />}
               {tab === "pitstop" && <PitStopGame soundOn={soundOn} />}
               {tab === "hotlap" && <HotLapGame close={close} pendingMs={pendingMs} />}
