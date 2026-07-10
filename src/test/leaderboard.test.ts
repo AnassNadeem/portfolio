@@ -102,7 +102,7 @@ describe("personalBest", () => {
     expect(personalBest("reaction")).toBe(200);
   });
 
-  it("is cleared by resetSessionScores (mirrors a page reload)", async () => {
+  it("is cleared by resetSessionScores", async () => {
     const { submitScore, personalBest, resetSessionScores } = await import("../lib/leaderboard");
     await submitScore("reaction", { name: "YOU", ms: 200 });
     resetSessionScores();
