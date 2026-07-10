@@ -31,7 +31,7 @@ const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "*";
 const cors = {
   "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 function json(body: unknown, status = 200): Response {
