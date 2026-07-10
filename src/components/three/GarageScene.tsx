@@ -292,7 +292,7 @@ export default function GarageScene({
       <pointLight position={[6, 2, 5]} intensity={0.6} color="#7d9bff" decay={0} />
 
       <Suspense fallback={null}>
-        <Environment preset="warehouse" background={false} blur={0.8} />
+        {/* No external HDR preset — CSP-safe; Lightformers only (same as HeroScene) */}
         <Environment resolution={256}>
           <Lightformer intensity={2.0} position={[0, 5, 0]} rotation={[-Math.PI / 2, 0, 0]} scale={[10, 3, 1]} form="rect" />
           <Lightformer intensity={0.8} position={[-6, 2, 3]} rotation={[0, Math.PI / 3, 0]} scale={[4, 1.2, 1]} form="rect" />
