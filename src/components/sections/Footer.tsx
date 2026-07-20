@@ -23,8 +23,8 @@ export default function Footer() {
             </span>
           </div>
           <p className="footer-tag">
-            Software engineer building fast, polished products. Currently{" "}
-            {driver.available ? "open to new opportunities" : "heads-down shipping"} — the race never stops.
+            Software engineer building fast, polished products.
+            {driver.available ? " Currently open to new opportunities." : " Currently heads-down shipping."}
           </p>
           <div className="footer-socials mono">
             <a href={driver.github} target="_blank" rel="noreferrer" data-cursor="link">GITHUB</a>
@@ -55,9 +55,9 @@ export default function Footer() {
 
       <div className="footer-bottom">
         <div className="container footer-bottom-inner mono">
-          <span>© {year} {driver.firstName} {driver.lastName} — ALL RIGHTS RESERVED</span>
+          <span>© {year} {driver.firstName} {driver.lastName}</span>
           <span className="footer-built">
-            BUILT WITH REACT · THREE.JS · GSAP · FRAMER MOTION — DESIGNED FOR SPEED
+            REACT · THREE.JS · GSAP · FRAMER MOTION
           </span>
           <button
             className="footer-link footer-privacy"
