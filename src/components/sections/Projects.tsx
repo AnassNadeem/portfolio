@@ -66,7 +66,7 @@ export default function Projects() {
         <SectionHeader sector="04" kicker="MISSION CONTROL" title="The Pit Wall" />
         <p className="pw-hint mono">
           <span className="pw-hint-drag" aria-hidden="true">⟵ ⟶</span>
-          DRAG LEFT / RIGHT TO SCAN THE SCREENS — CLICK ONE TO OPEN ITS FEED
+          DRAG TO SCAN · CLICK TO OPEN
         </p>
       </div>
 
@@ -96,7 +96,7 @@ export default function Projects() {
 
             {/* HUD: session header strip */}
             <div className="pw-hud mono" aria-hidden="true">
-              <span className="pw-hud-live" /> PIT WALL — LIVE
+              PIT WALL
               <span className="pw-hud-sep">|</span>
               {projects.length} FEEDS
             </div>
