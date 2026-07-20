@@ -89,7 +89,7 @@ export default function Navbar() {
 
           <div className="nav-cta">
             <button className="nav-arcade mono" onClick={() => setGamesOpen(true)} data-cursor="link" aria-label="Open arcade">
-              <span className="nav-arcade-dot" /> ARCADE
+              ARCADE
             </button>
             <a className="btn btn--ghost nav-resume" href={driver.resume} target="_blank" rel="noreferrer" data-cursor="view">
               <span>Resume</span>
