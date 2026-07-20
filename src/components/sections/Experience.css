@@ -2,8 +2,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: clamp(48px, 6vw, 80px);
-  padding-block: 20px;
+  gap: clamp(36px, 4.5vw, 64px);
+  padding-block: 8px;
 }
 
 /* the central "road": two edges + dashed centre line */
