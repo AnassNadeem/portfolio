@@ -43,7 +43,7 @@ export default function SectionHeader({ sector, kicker, title }: Props) {
       <div className="eyebrow mono">
         <span className="slash" />
         <span>
-          SECTOR {sector} — {kicker}
+          SECTOR {sector} · {kicker}
         </span>
         <span className="rule" />
       </div>

@@ -90,7 +90,7 @@ export default function HotLapTour() {
         >
           <div className="tour-card">
             <div className="tour-head mono">
-              <span className="tour-rec" aria-hidden="true" /> HOT LAP — ONBOARD WITH RACE ENGINEER
+              <span className="tour-rec" aria-hidden="true" /> HOT LAP · ONBOARD
             </div>
             <AnimatePresence mode="wait">
               <motion.p
