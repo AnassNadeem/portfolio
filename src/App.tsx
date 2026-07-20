@@ -6,7 +6,7 @@ import Navbar from "./components/Navbar";
 import SpeedHUD, { RaceToasts } from "./components/SpeedHUD";
 import RaceTimer from "./components/RaceTimer";
 import RacingLine from "./components/RacingLine";
-import AmbientField from "./components/AmbientField";
+import SectionBridge from "./components/SectionBridge";
 import Podium from "./components/Podium";
 
 // Defer all arcade game code until the user opens the game center
@@ -40,12 +40,17 @@ export default function App() {
       <main id="race-main" style={{ position: "relative" }}>
         <RacingLine />
         <Hero />
-        <AmbientField />
+        <SectionBridge from="00" to="01" variant="carbon" label="LIGHTS OUT" />
         <About />
+        <SectionBridge from="01" to="02" variant="beam" label="INTO THE GARAGE" />
         <Garage />
+        <SectionBridge from="02" to="03" variant="skid" label="OUT LAP" />
         <Experience />
+        <SectionBridge from="03" to="04" variant="telemetry" label="PIT WALL ONLINE" />
         <Projects />
+        <SectionBridge from="04" to="05" variant="scan" label="READING TELEMETRY" />
         <Skills />
+        <SectionBridge from="05" to="06" variant="pit" label="BOX BOX BOX" />
         <Contact />
       </main>
       <Footer />
