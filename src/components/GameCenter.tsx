@@ -370,7 +370,6 @@ export default function GameCenter() {
           >
             <div className="gc-head">
               <div className="gc-title">
-                <span className="gc-title-led" aria-hidden="true" />
                 <span className="mono">RACE CONTROL — ARCADE</span>
               </div>
               <button className="gc-close mono" onClick={close} aria-label="Close arcade" data-cursor="link">ESC ✕</button>
