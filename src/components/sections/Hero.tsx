@@ -227,11 +227,9 @@ export default function Hero() {
 
         <div className="hero-chips">
           <button className="hero-hint mono" onClick={() => busEmit("pitstop")} data-cursor="link">
-            <span className="hero-hint-dot hero-hint-dot--amber" />
-            BOX BOX — TYRE SWAP ▸
+            BOX BOX · TYRE SWAP ▸
           </button>
           <button className="hero-hint mono" onClick={() => busEmit("hotlap")} data-cursor="link">
-            <span className="hero-hint-dot hero-hint-dot--green" />
             30-SEC HOT LAP
           </button>
         </div>
@@ -239,7 +237,7 @@ export default function Hero() {
 
       {/* garage: pick a livery, retheme the whole site */}
       <div className="hero-garage" role="group" aria-label="Choose car livery">
-        <span className="mono">GARAGE — LIVERY</span>
+        <span className="mono">LIVERY</span>
         <div className="hero-garage-swatches">
           {liveryList.map((l) => (
             <motion.button
@@ -257,11 +255,9 @@ export default function Hero() {
       </div>
 
       <div className="hero-scroll mono" aria-hidden="true">
-        <span>SCROLL TO START</span>
         <span className="hero-scroll-chevrons">
           <i>▾</i><i>▾</i><i>▾</i>
         </span>
-        <span>SECTOR 01 AHEAD</span>
       </div>
     </section>
   );

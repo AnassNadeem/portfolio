@@ -198,36 +198,6 @@
   color: var(--text);
 }
 
-.hero-hint-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.9);
-  animation: hint-pulse 1.6s ease-in-out infinite;
-}
-
-.hero-hint-dot--amber {
-  background: #ffb000;
-  box-shadow: 0 0 10px rgba(255, 176, 0, 0.9);
-}
-
-.hero-hint-dot--white {
-  background: #f5f5f7;
-  box-shadow: 0 0 10px rgba(245, 245, 247, 0.7);
-}
-
-.hero-hint-dot--green {
-  background: #2bd354;
-  box-shadow: 0 0 10px rgba(43, 211, 84, 0.9);
-}
-
-@keyframes hint-pulse {
-  50% {
-    opacity: 0.35;
-  }
-}
-
 /* scroll cue */
 .hero-scroll {
   position: absolute;
@@ -270,9 +240,6 @@
     bottom: 78px;
   }
   .hero-chips {
-    display: none;
-  }
-  .hero-scroll span:last-child {
     display: none;
   }
   /* keep the livery picker clear of the socials row */
