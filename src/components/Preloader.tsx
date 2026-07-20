@@ -28,8 +28,8 @@ function Tire() {
 }
 
 /**
- * Quick and clean: the tire rolls the progress in, five lights, lights out,
- * page launches. ~2.5s on first visit, under 2s on return visits.
+ * Tire rolls the progress in, five lights, lights out, page launches.
+ * ~3.5s on first visit, ~2.5s on return visits.
  * (The reaction-time game lives in the Arcade → LIGHTS OUT.)
  */
 export default function Preloader() {
@@ -79,7 +79,7 @@ export default function Preloader() {
 
       tl.to(progress, {
         v: 100,
-        duration: returning ? 0.7 : 1.4,
+        duration: returning ? 1.2 : 2.2,
         ease: "power2.inOut",
         onUpdate: () => {
           const p = progress.v / 100;
@@ -93,16 +93,16 @@ export default function Preloader() {
           }
         },
       })
-        .to(lights, { "--lit": 1, stagger: 0.1, duration: 0.01 } as gsap.TweenVars, "+=0.05")
-        .to({}, { duration: 0.4 })
+        .to(lights, { "--lit": 1, stagger: 0.16, duration: 0.01 } as gsap.TweenVars, "+=0.1")
+        .to({}, { duration: 0.6 })
         .set(lights, { "--lit": 0 } as gsap.TweenVars)
         .set(outRef.current, { opacity: 1 })
-        .fromTo(outRef.current, { scale: 0.94 }, { scale: 1, duration: 0.15, ease: "power3.out" })
+        .fromTo(outRef.current, { scale: 0.94 }, { scale: 1, duration: 0.2, ease: "power3.out" })
         .to(rootRef.current, {
           yPercent: -100,
-          duration: 0.75,
+          duration: 0.95,
           ease: "power4.inOut",
-          delay: 0.25,
+          delay: 0.35,
         });
     },
     { scope: rootRef }
@@ -114,7 +114,7 @@ export default function Preloader() {
     <div className="preloader" ref={rootRef} aria-label="Loading">
       <div className="pl-inner">
         <div className="pl-top mono">
-          <span>ANAS.NADEEM — APEX PORTFOLIO</span>
+          <span>ANAS.NADEEM</span>
           <span>
             GRID&nbsp;<span ref={pctRef}>000</span>%
           </span>
