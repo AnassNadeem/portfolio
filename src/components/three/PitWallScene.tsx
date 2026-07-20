@@ -228,11 +228,6 @@ function Monitor({
         <planeGeometry args={[SCREEN_W, 0.22]} />
         <meshBasicMaterial map={labelTex} transparent toneMapped={false} />
       </mesh>
-      {/* power LED */}
-      <mesh position={[SCREEN_W / 2 - 0.08, (SCREEN_H / 2) + 0.13, 0.002]} raycast={() => null}>
-        <circleGeometry args={[0.022, 12]} />
-        <meshBasicMaterial color={hovered ? accent : "#2bd354"} />
-      </mesh>
       {/* cheap "screen glow" halo behind the bezel — no extra lights */}
       <mesh position={[0, -0.06, -0.09]} raycast={() => null}>
         <planeGeometry args={[SCREEN_W + 0.9, SCREEN_H + 0.9]} />
