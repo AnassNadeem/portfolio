@@ -188,6 +188,11 @@
     height: 56vh;
     min-height: 380px;
   }
+  .garage-controls {
+    /* canvas flows below the heading here — anchor to its top edge */
+    top: 12px;
+    right: clamp(12px, 4vw, 32px);
+  }
   .garage-head {
     position: relative;
     top: 0;
