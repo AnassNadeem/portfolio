@@ -153,21 +153,37 @@ export default function About() {
           so the beam lines up with the garage spotlight below. */}
       <div className="about-lamp" aria-hidden="true">
         <svg className="about-lamp-svg" viewBox="0 0 600 210" fill="none">
-          {/* wall-mount plate hugging the right edge */}
-          <rect x="588" y="4" width="12" height="78" rx="2" fill="#2a2a31" />
-          <rect x="566" y="22" width="26" height="34" rx="2" fill="#33333c" stroke="#45454f" strokeWidth="1" />
-          <circle cx="593" cy="14" r="2.4" fill="#4a4a55" />
-          <circle cx="593" cy="72" r="2.4" fill="#4a4a55" />
-          {/* upper arm: mount → elbow */}
-          <path d="M572 40 L432 90" stroke="#2e2e36" strokeWidth="11" strokeLinecap="round" />
-          <path d="M568 48 L438 96" stroke="#45454f" strokeWidth="2" strokeDasharray="5 4" opacity="0.7" />
-          <circle cx="572" cy="40" r="9" fill="#3a3a44" stroke="#4a4a55" strokeWidth="1.2" />
-          <circle cx="432" cy="90" r="10" fill="#3a3a44" stroke="#4a4a55" strokeWidth="1.2" />
-          <circle cx="432" cy="90" r="3.2" fill="#1a1a20" />
-          {/* lower arm: elbow → shade pivot */}
-          <path d="M432 90 L306 134" stroke="#2e2e36" strokeWidth="11" strokeLinecap="round" />
-          <path d="M428 98 L312 140" stroke="#45454f" strokeWidth="2" strokeDasharray="5 4" opacity="0.7" />
-          <circle cx="306" cy="134" r="9" fill="#3a3a44" stroke="#4a4a55" strokeWidth="1.2" />
+          <defs>
+            <linearGradient id="lamp-stem-fade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#2a2a31" stopOpacity="0" />
+              <stop offset="0.55" stopColor="#2a2a31" stopOpacity="1" />
+            </linearGradient>
+          </defs>
+
+          {/* wall-mounted articulated arm — desktop / wide screens */}
+          <g className="about-lamp-arm">
+            {/* wall-mount plate hugging the right edge */}
+            <rect x="588" y="4" width="12" height="78" rx="2" fill="#2a2a31" />
+            <rect x="566" y="22" width="26" height="34" rx="2" fill="#33333c" stroke="#45454f" strokeWidth="1" />
+            <circle cx="593" cy="14" r="2.4" fill="#4a4a55" />
+            <circle cx="593" cy="72" r="2.4" fill="#4a4a55" />
+            {/* upper arm: mount → elbow */}
+            <path d="M572 40 L432 90" stroke="#2e2e36" strokeWidth="11" strokeLinecap="round" />
+            <path d="M568 48 L438 96" stroke="#45454f" strokeWidth="2" strokeDasharray="5 4" opacity="0.7" />
+            <circle cx="572" cy="40" r="9" fill="#3a3a44" stroke="#4a4a55" strokeWidth="1.2" />
+            <circle cx="432" cy="90" r="10" fill="#3a3a44" stroke="#4a4a55" strokeWidth="1.2" />
+            <circle cx="432" cy="90" r="3.2" fill="#1a1a20" />
+            {/* lower arm: elbow → shade pivot */}
+            <path d="M432 90 L306 134" stroke="#2e2e36" strokeWidth="11" strokeLinecap="round" />
+            <path d="M428 98 L312 140" stroke="#45454f" strokeWidth="2" strokeDasharray="5 4" opacity="0.7" />
+            <circle cx="306" cy="134" r="9" fill="#3a3a44" stroke="#4a4a55" strokeWidth="1.2" />
+          </g>
+
+          {/* straight pendant drop — mobile, keeps the hang angle true */}
+          <g className="about-lamp-stem">
+            <rect x="295" y="0" width="10" height="112" fill="url(#lamp-stem-fade)" />
+            <rect x="288" y="102" width="24" height="16" rx="2" fill="#26262e" stroke="#3a3a44" strokeWidth="1" />
+          </g>
           {/* big industrial shade, mouth aimed straight down the spotlight axis */}
           <path
             d="M262 130 L338 130 L364 196 L236 196 Z"

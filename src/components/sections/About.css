@@ -182,6 +182,11 @@
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
 }
 
+/* pendant drop is a mobile-only treatment */
+.about-lamp-stem {
+  display: none;
+}
+
 .about-lamp-rim {
   fill: rgba(var(--accent-rgb), 0.55);
 }
@@ -260,6 +265,33 @@
   12% { opacity: 0.6; }
   85% { opacity: 0.6; }
   100% { transform: translateY(11%); opacity: 0; }
+}
+
+/* Narrow screens: the long wall-mounted arm gets compressed into an odd,
+   nearly-flat diagonal, so swap it for a straight pendant drop — the shade
+   hangs plumb on the --spot-x axis and the beam angle always reads true. */
+@media (max-width: 920px) {
+  .about-lamp-arm {
+    display: none;
+  }
+
+  .about-lamp-stem {
+    display: block;
+  }
+
+  .about-lamp {
+    /* keep the shade a sensible size on small screens; the bulb stays
+       centered in the element, so anchor the center to --spot-x directly */
+    width: clamp(240px, calc((100% - var(--spot-x)) * 2), 400px);
+    right: auto;
+    left: var(--spot-x);
+    transform: translateX(-50%);
+  }
+
+  .about-lamp-beam {
+    /* reach through the sector gate and land on the garage catch-light */
+    height: clamp(300px, 52vw, 480px);
+  }
 }
 
 @media (max-width: 1020px) {
