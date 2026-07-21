@@ -144,7 +144,7 @@ export default function SubmitScore({
                 checked={consent}
                 onChange={(e) => setConsent(e.target.checked)}
               />
-              I agree to be contacted about new projects &amp; launches
+              Data will be stored to save to leaderboard
             </label>
           )}
 
