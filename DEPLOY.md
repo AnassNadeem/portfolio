@@ -16,20 +16,20 @@
    | `VITE_SUPABASE_URL` | Supabase → Settings → API → Project URL |
    | `VITE_SUPABASE_ANON_KEY` | Supabase → Settings → API → anon public key |
    | `VITE_TURNSTILE_SITE_KEY` | Cloudflare Turnstile → Site Key |
-   | `VITE_SITE_URL` | Your `*.pages.dev` URL after first deploy |
+   | `VITE_SITE_URL` | `https://anasnadeem.dev` |
 
-5. **Save and Deploy** → copy the `https://<project>.pages.dev` URL
-6. Set `VITE_SITE_URL` to that URL and **redeploy**
-7. Turnstile → add hostname `<project>.pages.dev` (or `*.pages.dev`)
+5. **Save and Deploy**
+6. Turnstile → add hostname `anasnadeem.dev` (and `www.anasnadeem.dev` if you use www)
 
 ### Turnstile (contact form + arcade) — required
 
 The bot check shows **"Unable to connect to website"** until your live hostname is allowed:
 
 1. Cloudflare dashboard → **Turnstile** → your widget → **Settings**
-2. Under **Hostname management**, add your exact live URL host, e.g.:
-   - `portfolio.anass-nadeem42.workers.dev`
-   - (later) `yourdomain.com`
+2. Under **Hostname management**, add:
+   - `anasnadeem.dev`
+   - `www.anasnadeem.dev` (if used)
+   - your `*.pages.dev` preview host (optional)
 3. Save — no redeploy needed; refresh the page
 
 If the widget still fails, confirm `VITE_TURNSTILE_SITE_KEY` in Cloudflare Pages env matches the **Site Key** (not the secret).
@@ -49,11 +49,19 @@ supabase secrets set \
 
 Server secrets go in **Supabase only** — never in Cloudflare env vars.
 
-## Custom domain (later)
+## Custom domain — anasnadeem.dev
 
-Pages → your project → **Custom domains** → add domain bought on Cloudflare Registrar.
-Update `VITE_SITE_URL` and Turnstile hostnames, then redeploy.
+1. Cloudflare Pages → your project → **Custom domains** → **Set up a custom domain**
+2. Enter `anasnadeem.dev` (and optionally `www.anasnadeem.dev`)
+3. If the domain is on Cloudflare Registrar / same account, DNS is auto-configured
+4. If the domain is elsewhere, add the CNAME/A records Cloudflare shows
+5. Wait until status is **Active**
+6. Set Pages env `VITE_SITE_URL=https://anasnadeem.dev` → **Redeploy**
+7. Add `anasnadeem.dev` to Turnstile hostnames
 
-## Free test URL
+## Google Search Console
 
-No domain purchase needed. Cloudflare gives `https://<project-name>.pages.dev` automatically.
+1. [search.google.com/search-console](https://search.google.com/search-console) → Add property → URL prefix → `https://anasnadeem.dev`
+2. Verify (HTML tag or DNS TXT)
+3. Sitemaps → submit `https://anasnadeem.dev/sitemap.xml`
+4. URL Inspection → homepage → Request indexing
