@@ -117,7 +117,7 @@ export default function SubmitScore({
       {showSignup && (
         <>
           <div className="gc-submit-row">
-            <label className="mono" htmlFor="gc-email">EMAIL — JOIN GLOBAL LEADERBOARD</label>
+            <label className="mono" htmlFor="gc-email">EMAIL</label>
             <input
               id="gc-email"
               type="email"
@@ -133,7 +133,7 @@ export default function SubmitScore({
 
           {returningDriver && (
             <p className="gc-fineprint mono">
-              WELCOME BACK — ONE CALL SIGN FOR ALL GAMES. RENAME UPDATES EVERY MODE.
+              Welcome back. Rename updates all games.
             </p>
           )}
 
@@ -144,7 +144,7 @@ export default function SubmitScore({
                 checked={consent}
                 onChange={(e) => setConsent(e.target.checked)}
               />
-              Data will be stored to save to leaderboard
+              Your email is only used for the leaderboard and won't be shared.
             </label>
           )}
 
@@ -168,19 +168,19 @@ export default function SubmitScore({
               ? `⚠ ${saveError.toUpperCase()}`
               : savedPermanently
                 ? renamed
-                  ? "✓ CALL SIGN UPDATED ON THE GLOBAL LEADERBOARD."
-                  : "✓ SAVED TO THE GLOBAL LEADERBOARD."
-                : "✓ RANKED THIS SESSION — ENTER EMAIL TO JOIN THE GLOBAL LEADERBOARD."}
+                  ? "✓ Call sign updated."
+                  : "✓ Saved to global leaderboard."
+                : "✓ Ranked this session. Add email to go global."}
           </p>
         ) : (
           <p className="gc-fineprint mono">
             {hasEmail
-              ? "ONE EMAIL = ONE CALL SIGN ACROSS ALL GAMES. BOT CHECK REQUIRED."
-              : "NO EMAIL — RANKED THIS SESSION ONLY. ENTER EMAIL TO JOIN THE GLOBAL LEADERBOARD."}
+              ? "One email = one call sign across all games."
+              : "No email = session only. Add email to go global."}
           </p>
         )
       ) : (
-        <p className="gc-fineprint mono">RANKED THIS SESSION ONLY — CLEARED ON REFRESH.</p>
+        <p className="gc-fineprint mono">Session only. Cleared on refresh.</p>
       )}
 
       <button className="btn gc-save" onClick={save} disabled={saved} data-cursor="link">

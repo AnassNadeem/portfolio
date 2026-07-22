@@ -67,7 +67,7 @@ function ReactionGame({ soundOn }: { soundOn: boolean }) {
 
       {state === "idle" && (
         <>
-          <p className="gc-copy">Five lights. They go out — you click. Average human: ~273ms. F1 driver: ~200ms.</p>
+          <p className="gc-copy">Five lights. They go out, you click. Average: ~273ms. F1: ~200ms.</p>
           <button className="btn" onClick={arm} data-cursor="link"><span>Arm The Lights</span></button>
         </>
       )}
@@ -78,7 +78,7 @@ function ReactionGame({ soundOn }: { soundOn: boolean }) {
       )}
       {state === "false" && (
         <>
-          <p className="gc-copy gc-copy--warn">⚠ FALSE START — the stewards are watching.</p>
+          <p className="gc-copy gc-copy--warn">⚠ FALSE START. Try again.</p>
           <button className="btn btn--ghost" onClick={arm} data-cursor="link"><span>Again</span></button>
         </>
       )}
@@ -158,14 +158,14 @@ function PitStopGame({ soundOn }: { soundOn: boolean }) {
 
       {state === "idle" && (
         <>
-          <p className="gc-copy">Hit all four wheel guns as fast as you can. The 2023 world record is 1.80s. Double-taps cost +0.2s.</p>
-          <button className="btn" onClick={go} data-cursor="link"><span>Car In The Box — GO</span></button>
+          <p className="gc-copy">Hit all four guns. Record: 1.80s. Double-taps: +0.2s.</p>
+          <button className="btn" onClick={go} data-cursor="link"><span>Car In The Box</span></button>
         </>
       )}
       {state === "live" && (
         <p className="gc-copy gc-copy--go">
-          GUNS ON — {4 - hitSet.size} WHEEL{4 - hitSet.size !== 1 ? "S" : ""} TO GO
-          {penalty > 0 && <span className="gc-copy--warn"> · +{(penalty / 1000).toFixed(1)}s PENALTY</span>}
+          {4 - hitSet.size} WHEEL{4 - hitSet.size !== 1 ? "S" : ""} LEFT
+          {penalty > 0 && <span className="gc-copy--warn"> · +{(penalty / 1000).toFixed(1)}s</span>}
         </p>
       )}
       {state === "done" && (
@@ -188,13 +188,13 @@ function PitStopGame({ soundOn }: { soundOn: boolean }) {
 
 /** ── GAME 3: HOT LAP (the scroll itself) ── */
 function HotLapGame({ close, pendingMs }: { close: () => void; pendingMs: number | null }) {
-  const { scrollTo } = useApp();
+  const { scrollTo, lenisRef } = useApp();
   const pb = personalBest("hotlap");
 
   if (pendingMs) {
     return (
       <div className="gc-game">
-        <p className="gc-copy">Chequered flag! Post your lap to the grid:</p>
+        <p className="gc-copy">Chequered flag. Post your time:</p>
         <SubmitScore game="hotlap" ms={pendingMs} onDone={() => {}} />
       </div>
     );
@@ -203,19 +203,22 @@ function HotLapGame({ close, pendingMs }: { close: () => void; pendingMs: number
   return (
     <div className="gc-game">
       <p className="gc-copy">
-        The whole site is the circuit. The timer starts on your first scroll and stops at the
-        chequered line in the footer — three timed sectors on the way. Splits flash green; purple
-        means personal best.
+        Scroll the site. Timer starts on first scroll, ends at the footer. Green = good split, purple = PB.
       </p>
       <div className="gc-pb mono">
-        PERSONAL BEST — <span className="text-accent">{pb ? fmtMs(pb, "hotlap") : "NO TIME SET"}</span>
+        PB: <span className="text-accent">{pb ? fmtMs(pb, "hotlap") : "NO TIME SET"}</span>
       </div>
       <button
         className="btn"
         onClick={() => {
           close();
           busEmit("lapReset");
-          scrollTo(0);
+          // Lenis is stopped while the arcade is open; wait for it to restart
+          // before scrolling back to the hero / grid.
+          window.setTimeout(() => {
+            lenisRef.current?.start();
+            scrollTo(0);
+          }, 60);
         }}
         data-cursor="link"
       >
@@ -279,15 +282,15 @@ function Ranks() {
           ))}
           {board.length === 0 && (
             <tr>
-              <td colSpan={3} className="mono gc-empty">NO TIMES YET — SET ONE.</td>
+              <td colSpan={3} className="mono gc-empty">NO TIMES YET.</td>
             </tr>
           )}
         </tbody>
       </table>
       <p className="gc-fineprint mono">
         {supabaseReady
-          ? "ONE EMAIL = ONE CALL SIGN FOR ALL GAMES. BOTS ARE FIXED — YOUR TIME NEEDS EMAIL TO SAVE GLOBALLY."
-          : "TIMES RANK THIS SESSION ONLY — CLEARED ON REFRESH."}
+          ? "One email = one call sign. Email required to save globally."
+          : "Session only. Cleared on refresh."}
       </p>
     </div>
   );
@@ -371,7 +374,7 @@ export default function GameCenter() {
           >
             <div className="gc-head">
               <div className="gc-title">
-                <span className="mono">RACE CONTROL — ARCADE</span>
+                <span className="mono">RACE CONTROL · ARCADE</span>
               </div>
               <button className="gc-close mono" onClick={close} aria-label="Close arcade" data-cursor="link">ESC ✕</button>
             </div>

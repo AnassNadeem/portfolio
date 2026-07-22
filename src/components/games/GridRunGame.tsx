@@ -480,8 +480,6 @@ export default function GridRunGame({ soundOn }: { soundOn: boolean }) {
     g.lane = Math.max(0, Math.min(LANES - 1, g.lane + dir));
   };
 
-  const totalRun = LEVELS.reduce((s, l) => s + l.dur, 0);
-
   // ── sector tracker: 0 ── 1 ── 2 ── 3 ── 4 ── 🏆 ─────────────────────────
   // node i is level i; the link after it fills as you race that level
   const nodeState = (i: number): "done" | "active" | "todo" => {
@@ -537,11 +535,10 @@ export default function GridRunGame({ soundOn }: { soundOn: boolean }) {
           <div className="gridrun-overlay">
             <p className="gc-copy display gridrun-title">GRID RUN</p>
             <p className="gc-copy">
-              Five timed sectors, ~{Math.round(totalRun / 60)} min flat out. Dodge barriers &amp; rivals,
-              oil costs you speed, gems are +80. Arrow keys, scroll wheel, swipe, or the buttons below.
+              Five sectors. Dodge barriers and rivals. Oil slows you, gems are +80.
             </p>
             <button className="btn" type="button" onClick={() => startLevel(0)} data-cursor="link">
-              <span>Lights Out — GO</span>
+              <span>Lights Out</span>
             </button>
           </div>
         )}
