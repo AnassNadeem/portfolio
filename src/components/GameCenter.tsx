@@ -188,7 +188,7 @@ function PitStopGame({ soundOn }: { soundOn: boolean }) {
 
 /** ── GAME 3: HOT LAP (the scroll itself) ── */
 function HotLapGame({ close, pendingMs }: { close: () => void; pendingMs: number | null }) {
-  const { scrollTo, lenisRef } = useApp();
+  const { lenisRef } = useApp();
   const pb = personalBest("hotlap");
 
   if (pendingMs) {
@@ -213,11 +213,13 @@ function HotLapGame({ close, pendingMs }: { close: () => void; pendingMs: number
         onClick={() => {
           close();
           busEmit("lapReset");
-          // Lenis is stopped while the arcade is open; wait for it to restart
-          // before scrolling back to the hero / grid.
+          // Jump straight to the grid — no animated scroll (that would count as a lap).
+          // Lenis is stopped while the arcade is open; wait for it to restart first.
           window.setTimeout(() => {
-            lenisRef.current?.start();
-            scrollTo(0);
+            const lenis = lenisRef.current;
+            lenis?.start();
+            if (lenis) lenis.scrollTo(0, { immediate: true });
+            else window.scrollTo(0, 0);
           }, 60);
         }}
         data-cursor="link"

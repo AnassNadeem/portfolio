@@ -71,7 +71,13 @@ export default function CommandPalette() {
       { id: "box", group: "ACTIONS", label: "Box box — pit stop", hint: "swaps tyres", run: () => { close(); app.scrollTo(0); setTimeout(() => busEmit("pitstop"), 900); } },
       { id: "cam", group: "ACTIONS", label: `Camera — switch to ${app.camMode === "tv" ? "onboard" : "TV"}`, run: () => { close(); app.toggleCam(); app.scrollTo(0); } },
       { id: "tour", group: "ACTIONS", label: "Start the 30-second hot lap tour", run: () => { close(); busEmit("hotlap"); } },
-      { id: "lap", group: "ACTIONS", label: "Start a flying lap (timed)", run: () => { close(); busEmit("lapReset"); app.scrollTo(0); } },
+      { id: "lap", group: "ACTIONS", label: "Start a flying lap (timed)", run: () => {
+        close();
+        busEmit("lapReset");
+        const lenis = app.lenisRef.current;
+        if (lenis) lenis.scrollTo(0, { immediate: true });
+        else window.scrollTo(0, 0);
+      } },
       { id: "arcade", group: "ACTIONS", label: "Open the arcade", hint: "games + ranks", run: () => { close(); app.setGamesOpen(true); } },
       { id: "sound", group: "ACTIONS", label: `Sound — turn ${app.soundOn ? "off" : "on"}`, run: () => { close(); app.toggleSound(); } },
       ...app.liveryList.map<Item>((l) => ({
