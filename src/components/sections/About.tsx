@@ -134,6 +134,23 @@ export default function About() {
               </motion.p>
             ))}
 
+            <motion.div
+              className="about-radio"
+              initial={reduced ? false : { opacity: 0, y: 26 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.4 }}
+              transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: 0.16 }}
+            >
+              <div className="about-radio-eyebrow mono">
+                <span className="slash" aria-hidden="true" />
+                <span>OFF THE RADIO</span>
+                <span className="rule" aria-hidden="true" />
+              </div>
+              {about.offTheRadio.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </motion.div>
+
             <div className="about-ctas">
               <a className="btn" href={driver.resume} target="_blank" rel="noreferrer" data-cursor="view">
                 <span>View Resume</span>

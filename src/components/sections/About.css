@@ -129,7 +129,7 @@
 }
 
 /* ── copy column ── */
-.about-copy p {
+.about-copy > p {
   color: var(--text-dim);
   font-size: 17.5px;
   line-height: 1.65;
@@ -137,15 +137,58 @@
   max-width: 60ch;
 }
 
-.about-copy p::first-letter {
+.about-copy > p::first-letter {
   color: var(--text);
+}
+
+.about-radio {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+  max-width: 60ch;
+}
+
+.about-radio-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--text-dim);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  margin-bottom: 18px;
+}
+
+.about-radio-eyebrow .slash {
+  width: 22px;
+  height: 10px;
+  flex-shrink: 0;
+  background: var(--accent);
+  transform: skewX(var(--skew));
+}
+
+.about-radio-eyebrow .rule {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.about-radio p {
+  color: var(--text-dim);
+  font-size: 16px;
+  line-height: 1.65;
+  margin-bottom: 14px;
+}
+
+.about-radio p:last-child {
+  margin-bottom: 0;
 }
 
 .about-ctas {
   display: flex;
   flex-wrap: wrap;
   gap: 18px;
-  margin-top: 12px;
+  margin-top: 28px;
 }
 
 /* ── garage work lamp → garage spotlight bridge ──
