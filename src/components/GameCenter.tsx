@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useApp } from "../context/AppContext";
 import { emit as busEmit } from "../lib/bus";
-import { getBoard, personalBest, fmtMs, type Game, type Entry } from "../lib/leaderboard";
+import { getBoard, getLocalBoard, prefetchBoards, personalBest, fmtMs, type Game, type Entry } from "../lib/leaderboard";
 import { takePending } from "../lib/podium-bridge";
 import { supabaseReady } from "../lib/supabase";
 import { playShift } from "../lib/sound";
@@ -229,18 +229,18 @@ function HotLapGame({ close, pendingMs }: { close: () => void; pendingMs: number
 /** ── RANKS ── */
 function Ranks() {
   const [game, setGame] = useState<Game>("reaction");
-  const [board, setBoard] = useState<Entry[]>([]);
+  const [board, setBoard] = useState<Entry[]>(() => getLocalBoard("reaction"));
   const [refresh, setRefresh] = useState(0);
 
-  const loadBoard = useCallback(() => {
+  useEffect(() => {
+    // Paint bots + session (+ any warm cache) immediately, then refresh from network.
+    setBoard(getLocalBoard(game));
     let alive = true;
     void getBoard(game).then((b) => alive && setBoard(b));
     return () => {
       alive = false;
     };
-  }, [game]);
-
-  useEffect(() => loadBoard(), [loadBoard, refresh]);
+  }, [game, refresh]);
 
   useEffect(() => {
     const onPosted = () => setRefresh((n) => n + 1);
@@ -303,6 +303,7 @@ export default function GameCenter() {
 
   useEffect(() => {
     if (!gamesOpen) return;
+    prefetchBoards();
     const p = takePending();
     if (p) {
       setTab(p.game);
