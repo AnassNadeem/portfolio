@@ -15,7 +15,7 @@
    | `NODE_VERSION` | `24` |
    | `VITE_SUPABASE_URL` | Supabase → Settings → API → Project URL |
    | `VITE_SUPABASE_ANON_KEY` | Supabase → Settings → API → anon public key |
-   | `VITE_TURNSTILE_SITE_KEY` | Cloudflare Turnstile → Site Key |
+   | `VITE_TURNSTILE_SITE_KEY` | `0x4AAAAAADpP4owrV21wf-q5` (apex-portfolio widget) |
    | `VITE_SITE_URL` | `https://anasnadeem.dev` |
 
 5. **Save and Deploy**
@@ -42,7 +42,7 @@ supabase db push
 supabase functions deploy contact-submit
 supabase functions deploy arcade-submit
 supabase secrets set \
-  TURNSTILE_SECRET_KEY=<secret> \
+  TURNSTILE_SECRET=<secret> \
   RESEND_API_KEY=<key> \
   NOTIFICATION_EMAIL=<your@email.com>
 ```

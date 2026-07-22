@@ -102,13 +102,15 @@ Deno.serve(async (req: Request) => {
   }
   if (errs.length) return json({ error: errs.join(" ") }, 422);
 
-  // Turnstile server-side verification
+  // Turnstile canonical siteverify — gate before existing handler logic
+  const turnstileSecret =
+    Deno.env.get("TURNSTILE_SECRET") ?? Deno.env.get("TURNSTILE_SECRET_KEY") ?? "";
   const tsRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      secret: Deno.env.get("TURNSTILE_SECRET_KEY") ?? "",
-      response: turnstileToken,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      secret: turnstileSecret,
+      response: turnstileToken as string,
       remoteip: ip,
     }),
   });
