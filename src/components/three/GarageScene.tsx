@@ -52,6 +52,7 @@ function PartLabel({
         ref={ref}
         className={`garage-label ${active ? "is-active" : ""}`}
         onClick={onPick}
+        onPointerEnter={onPick}
         style={{ opacity: 0 }}
         data-cursor="link"
       >
