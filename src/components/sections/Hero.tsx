@@ -227,7 +227,7 @@ export default function Hero() {
 
         <div className="hero-chips">
           <button className="hero-hint mono" onClick={() => busEmit("pitstop")} data-cursor="link">
-            BOX BOX · TYRE SWAP ▸
+            BOX BOX · TYRE SWAP
           </button>
           <button className="hero-hint mono" onClick={() => busEmit("hotlap")} data-cursor="link">
             30-SEC HOT LAP
