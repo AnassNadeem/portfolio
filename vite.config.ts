@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from "vitest/config";
 import { loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import { cloudflare } from "@cloudflare/vite-plugin";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
@@ -29,7 +30,7 @@ export default defineConfig(({ mode }) => {
   const siteUrl = env.VITE_SITE_URL || "https://anasnadeem.dev";
 
   return {
-    plugins: [react(), injectSiteUrl(siteUrl)],
+    plugins: [react(), cloudflare(), injectSiteUrl(siteUrl)],
     build: {
       chunkSizeWarningLimit: 1700,
     },
