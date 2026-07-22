@@ -29,13 +29,13 @@ export default function HotLapTour() {
       activeRef.current = true;
       setActive(true);
       busEmit("lapReset");
-      // from the grid, lights out, go
-      lenis.scrollTo(0, { duration: 0.6 });
+      // Snap to the grid instantly so a mid-page start doesn't score the climb.
+      lenis.scrollTo(0, { immediate: true });
       window.setTimeout(() => {
         if (!activeRef.current) return;
         const max = document.documentElement.scrollHeight - innerHeight;
         lenis.scrollTo(max, { duration: TOUR_SECONDS, easing: (t: number) => t, lock: false });
-      }, 750);
+      }, 80);
     });
   }, [lenisRef, reduced, scrollTo]);
 

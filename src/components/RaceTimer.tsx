@@ -35,6 +35,9 @@ export default function RaceTimer() {
 
     let running = false;
     let done = false;
+    // Must visit the grid (top) before a lap can start — prevents false starts
+    // when teleporting/scrolling up from the footer after "Start Flying Lap".
+    let armed = window.scrollY < 8;
     let startT = 0;
     let lastSplitT = 0;
     let sectorIdx = 0;
@@ -45,6 +48,7 @@ export default function RaceTimer() {
     const reset = () => {
       running = false;
       done = false;
+      armed = false;
       sectorIdx = 0;
       trace = [];
     };
@@ -68,8 +72,15 @@ export default function RaceTimer() {
       if (max <= 0) return;
       const p = window.scrollY / max;
 
-      if (!running && !done && p > 0.012) {
+      // back on the grid → re-arm (after finish, or after lapReset from mid-page)
+      if (p < 0.01) {
+        if (done) reset();
+        armed = true;
+      }
+
+      if (armed && !running && !done && p > 0.012) {
         running = true;
+        armed = false;
         startT = performance.now();
         lastSplitT = startT;
         sectorIdx = 0;
@@ -78,8 +89,6 @@ export default function RaceTimer() {
         busEmit("lapStart");
       }
 
-      // back on the grid → re-arm
-      if (done && p < 0.01) reset();
       if (!running) return;
 
       // sample the lap for the ghost replay (~6 Hz, capped)
