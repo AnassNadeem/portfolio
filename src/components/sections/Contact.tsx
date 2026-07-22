@@ -70,10 +70,10 @@ export default function Contact() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "INVALID FREQUENCY";
     if (message.trim().length < 10) errs.message = "MESSAGE TOO SHORT (MIN 10)";
     if (CONTACT_URL && !ANON_KEY) {
-      errs.server = "SUPABASE ANON KEY MISSING — COPY .env.example TO .env";
+      errs.server = "SUPABASE ANON KEY MISSING. COPY .env.example TO .env";
     }
     if (CONTACT_URL && !TURNSTILE_SITE_KEY) {
-      errs.server = "FORM MISCONFIGURED — TURNSTILE SITE KEY MISSING";
+      errs.server = "FORM MISCONFIGURED. TURNSTILE SITE KEY MISSING";
     }
     if (CONTACT_URL && TURNSTILE_SITE_KEY && !turnstileToken) errs.turnstile = "COMPLETE THE BOT CHECK BELOW";
     setErrors(errs);
@@ -107,9 +107,9 @@ export default function Contact() {
             msg = data.error ?? msg;
           } catch {
             msg = res.status === 404
-              ? "CONTACT SERVICE NOT FOUND — CHECK DEPLOYMENT"
+              ? "CONTACT SERVICE NOT FOUND. CHECK DEPLOYMENT"
               : res.status === 401 || res.status === 403
-              ? "AUTH FAILED — CHECK SUPABASE KEYS"
+              ? "AUTH FAILED. CHECK SUPABASE KEYS"
               : `SERVER ERROR (${res.status})`;
           }
           setStatus("error");
@@ -122,8 +122,8 @@ export default function Contact() {
         const detail = err instanceof Error ? err.message : "";
         setErrors({
           server: detail.includes("Failed to fetch")
-            ? "NETWORK ERROR — REDEPLOY contact-submit (CORS) OR CHECK .env KEYS"
-            : "NETWORK ERROR — CHECK CONNECTION OR TRY EMAIL DIRECTLY",
+            ? "NETWORK ERROR. REDEPLOY contact-submit (CORS) OR CHECK .env KEYS"
+            : "NETWORK ERROR. CHECK CONNECTION OR TRY EMAIL DIRECTLY",
         });
         setTsResetKey((k) => k + 1);
         setTurnstileToken("");
@@ -160,21 +160,19 @@ export default function Contact() {
   return (
     <section className="section contact" id="contact">
       <div className="container">
-        <SectionHeader sector="06" kicker="OPEN CHANNEL" title="Box Box — Let's Talk" />
+        <SectionHeader sector="06" kicker="OPEN CHANNEL" title="Box Box" />
 
         <div className="contact-grid">
           {/* left rail: status + direct channels */}
           <div className="contact-rail">
             <div className="contact-status">
-              <span className={`contact-dot ${driver.available ? "is-live" : ""}`} aria-hidden="true" />
               <span className="mono">
-                STATUS: {driver.available ? "AVAILABLE FOR OPPORTUNITIES" : "ON TRACK — BUSY"}
+                {driver.available ? "Open for Placement Opportunities" : "BUSY"}
               </span>
             </div>
 
             <p className="contact-lede hl-reveal">
-              Have a project that needs to go faster — or a team that needs a closer?
-              My inbox is always open. Radio in and I'll get back within 24 hours.
+              Open to placements, freelance, and interesting projects. I reply within 24 hours.
             </p>
 
             <a className="contact-email display" href={`mailto:${driver.email}`} data-cursor="link">
@@ -197,15 +195,15 @@ export default function Contact() {
             </div>
 
             <div className="contact-meta mono">
-              <span>HOME CIRCUIT — {driver.location}</span>
-              <span>RESPONSE TIME — &lt; 24 HRS</span>
+              <span>{driver.location}</span>
+              <span>REPLY &lt; 24 HRS</span>
             </div>
           </div>
 
           {/* the radio console */}
           <div className="radio-panel">
             <div className="radio-head mono">
-              <span>TEAM RADIO — ENCRYPTED</span>
+              <span>TEAM RADIO</span>
               <span className="radio-waves" aria-hidden="true">
                 <i /><i /><i /><i />
               </span>
@@ -226,10 +224,10 @@ export default function Contact() {
                   <p>
                     {useEdge
                       ? notificationPending
-                        ? "Message saved — email notification is pending. I'll still get back to you within 24 hours."
-                        : "Message transmitted — I'll get back to you within 24 hours."
+                        ? "Message saved. Email notification is pending. I'll get back within 24 hours."
+                        : "Got it. I'll get back within 24 hours."
                       : FORM_ENDPOINT
-                      ? "Message transmitted — I'll get back to you within 24 hours."
+                      ? "Got it. I'll get back within 24 hours."
                       : "Your mail client should be open with the draft. Didn't open? Email me directly at "}
                     {!useEdge && !FORM_ENDPOINT && <a href={`mailto:${driver.email}`}>{driver.email}</a>}
                   </p>
@@ -255,7 +253,7 @@ export default function Contact() {
 
                   <div className="field-row">
                     <div className={`field ${errors.name ? "has-error" : ""}`}>
-                      <label className="mono" htmlFor="cf-name">CALL SIGN — NAME</label>
+                      <label className="mono" htmlFor="cf-name">NAME</label>
                       <input
                         id="cf-name"
                         name="name"
@@ -268,7 +266,7 @@ export default function Contact() {
                       {errors.name && <span className="field-err mono">{errors.name}</span>}
                     </div>
                     <div className={`field ${errors.email ? "has-error" : ""}`}>
-                      <label className="mono" htmlFor="cf-email">FREQUENCY — EMAIL</label>
+                      <label className="mono" htmlFor="cf-email">EMAIL</label>
                       <input
                         id="cf-email"
                         name="email"
@@ -283,7 +281,7 @@ export default function Contact() {
                   </div>
 
                   <div className="field">
-                    <label className="mono" htmlFor="cf-subject">CHANNEL — SUBJECT</label>
+                    <label className="mono" htmlFor="cf-subject">SUBJECT</label>
                     <div className="select-wrap">
                       <select
                         id="cf-subject"
@@ -299,12 +297,12 @@ export default function Contact() {
                   </div>
 
                   <div className={`field ${errors.message ? "has-error" : ""}`}>
-                    <label className="mono" htmlFor="cf-message">TRANSMISSION — MESSAGE</label>
+                    <label className="mono" htmlFor="cf-message">MESSAGE</label>
                     <textarea
                       id="cf-message"
                       name="message"
                       rows={5}
-                      placeholder="Tell me about the project, the team, the timeline — or just say hi."
+                      placeholder="Project, team, timeline, or just say hi."
                       value={fields.message}
                       onChange={set("message")}
                     />
@@ -326,7 +324,7 @@ export default function Contact() {
 
                   {status === "error" && (
                     <p className="radio-error mono">
-                      ⚠ {errors.server ?? "TRANSMISSION FAILED — TRY AGAIN OR EMAIL DIRECTLY"}
+                      ⚠ {errors.server ?? "SEND FAILED. TRY AGAIN OR EMAIL DIRECTLY"}
                     </p>
                   )}
 

@@ -45,15 +45,13 @@ function Part({
     g.position.y += (target.y * e - g.position.y) * 0.13;
     g.position.z += (target.z * e - g.position.z) * 0.13;
   });
+  // hover selects immediately and stays selected (no reset on pointer-out),
+  // so the spec panel updates as you sweep across parts without clicking
   const events = onPart
     ? {
         onPointerOver: (e: { stopPropagation: () => void }) => {
           e.stopPropagation();
           onPart(id);
-        },
-        onPointerOut: (e: { stopPropagation: () => void }) => {
-          e.stopPropagation();
-          onPart(null);
         },
         onClick: (e: { stopPropagation: () => void }) => {
           e.stopPropagation();

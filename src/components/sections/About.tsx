@@ -1,54 +1,9 @@
-import { useRef, useEffect, useState } from "react";
-import { motion, useMotionValue, useSpring, useTransform, useInView, animate, AnimatePresence } from "framer-motion";
+import { useRef } from "react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import SectionHeader from "../SectionHeader";
 import { useApp } from "../../context/AppContext";
 import { driver, about } from "../../data/portfolio";
-import { seasonStats, type SeasonStats } from "../../lib/github";
 import "./About.css";
-
-/** Live numbers straight from the GitHub API — the telemetry is real */
-function SeasonTelemetry() {
-  const [stats, setStats] = useState<SeasonStats | null>(null);
-  useEffect(() => {
-    let live = true;
-    void seasonStats(driver.githubUser).then((s) => {
-      if (live) setStats(s);
-    });
-    return () => {
-      live = false;
-    };
-  }, []);
-
-  return (
-    <div className="season-tel">
-      <div className="season-tel-head mono">
-        <span className="season-tel-dot" aria-hidden="true" /> LIVE FROM GITHUB — SEASON {new Date().getFullYear()}
-      </div>
-      {stats ? (
-        <div className="season-tel-grid mono">
-          <span>
-            <strong>{stats.publicRepos}</strong> PUBLIC REPOS
-          </span>
-          <span>
-            <strong>{stats.followers}</strong> FOLLOWERS
-          </span>
-          <span>
-            <strong>{stats.memberSince}</strong> ROOKIE SEASON
-          </span>
-          {stats.topLanguages[0] && (
-            <span>
-              <strong>{stats.topLanguages.map((l) => l.lang).join(" · ")}</strong> TOP FUEL
-            </span>
-          )}
-        </div>
-      ) : (
-        <div className="season-tel-grid mono">
-          <span className="season-tel-wait">ACQUIRING SIGNAL…</span>
-        </div>
-      )}
-    </div>
-  );
-}
 
 /** Pentagon "driver rating" radar — pure SVG, no chart lib */
 function Radar() {
@@ -96,23 +51,6 @@ function Radar() {
   );
 }
 
-function Counter({ value, suffix }: { value: number; suffix: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-  useEffect(() => {
-    if (!inView || !ref.current) return;
-    const controls = animate(0, value, {
-      duration: 1.6,
-      ease: [0.16, 1, 0.3, 1],
-      onUpdate: (v) => {
-        if (ref.current) ref.current.textContent = `${Math.round(v)}${suffix}`;
-      },
-    });
-    return () => controls.stop();
-  }, [inView, value, suffix]);
-  return <span ref={ref}>0{suffix}</span>;
-}
-
 /** Driver card with pointer-tracked 3D tilt (Framer Motion springs) */
 function DriverCard() {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -158,21 +96,14 @@ function DriverCard() {
             <div className="driver-card-name display">
               {driver.firstName} <em>{driver.lastName}</em>
             </div>
-            <div className="mono driver-card-team">TEAM INDEPENDENT — FULL-STACK DIV.</div>
+            <div className="mono driver-card-team">INDEPENDENT · FULL-STACK</div>
           </div>
         </div>
 
         <Radar />
 
-        <div className="driver-card-stats">
-          {about.stats.map((s) => (
-            <div className="driver-stat" key={s.label}>
-              <span className="driver-stat-val display">
-                <Counter value={s.value} suffix={s.suffix} />
-              </span>
-              <span className="mono">{s.label}</span>
-            </div>
-          ))}
+        <div className="driver-card-langs mono">
+          {about.topLanguages.join(" • ")}
         </div>
       </motion.div>
     </div>
@@ -181,7 +112,6 @@ function DriverCard() {
 
 export default function About() {
   const { reduced } = useApp();
-  const [expanded, setExpanded] = useState(false);
 
   return (
     <section className="section about" id="about">
@@ -192,58 +122,34 @@ export default function About() {
           <DriverCard />
 
           <div className="about-copy">
-            <motion.p
-              className="about-lead"
+            {about.paragraphs.map((p, i) => (
+              <motion.p
+                key={i}
+                initial={reduced ? false : { opacity: 0, y: 26 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: i * 0.08 }}
+              >
+                {p}
+              </motion.p>
+            ))}
+
+            <motion.div
+              className="about-radio"
               initial={reduced ? false : { opacity: 0, y: 26 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
-              transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, amount: 0.4 }}
+              transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: 0.16 }}
             >
-              {about.lead}
-            </motion.p>
-
-            <button
-              className="about-more mono"
-              onClick={() => setExpanded((v) => !v)}
-              data-cursor="link"
-              aria-expanded={expanded}
-            >
-              {expanded ? "SHOW LESS ▴" : "READ MORE ▾"}
-            </button>
-
-            <AnimatePresence>
-              {expanded && (
-                <motion.div
-                  className="about-expanded"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  {about.paragraphs.map((p, i) => (
-                    <p key={i}>{p}</p>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="about-chips">
-              {about.values.map((v, i) => (
-                <motion.span
-                  key={v.k}
-                  className="about-chip mono"
-                  initial={reduced ? false : { opacity: 0, y: 12 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.6 }}
-                  transition={{ duration: 0.45, delay: 0.1 + i * 0.08 }}
-                  title={v.v}
-                >
-                  {v.k}
-                </motion.span>
+              <div className="about-radio-eyebrow mono">
+                <span className="slash" aria-hidden="true" />
+                <span>OFF THE RADIO</span>
+                <span className="rule" aria-hidden="true" />
+              </div>
+              {about.offTheRadio.map((p, i) => (
+                <p key={i}>{p}</p>
               ))}
-            </div>
-
-            <SeasonTelemetry />
+            </motion.div>
 
             <div className="about-ctas">
               <a className="btn" href={driver.resume} target="_blank" rel="noreferrer" data-cursor="view">
@@ -257,6 +163,58 @@ export default function About() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Garage work lamp — clamp bolts to the RIGHT viewport edge, the arm
+          reaches left/down and the shade hangs on the shared --spot-x axis
+          so the beam lines up with the garage spotlight below. */}
+      <div className="about-lamp" aria-hidden="true">
+        <svg className="about-lamp-svg" viewBox="0 0 600 210" fill="none">
+          <defs>
+            <linearGradient id="lamp-stem-fade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#2a2a31" stopOpacity="0" />
+              <stop offset="0.55" stopColor="#2a2a31" stopOpacity="1" />
+            </linearGradient>
+          </defs>
+
+          {/* wall-mounted articulated arm — desktop / wide screens */}
+          <g className="about-lamp-arm">
+            {/* wall-mount plate hugging the right edge */}
+            <rect x="588" y="4" width="12" height="78" rx="2" fill="#2a2a31" />
+            <rect x="566" y="22" width="26" height="34" rx="2" fill="#33333c" stroke="#45454f" strokeWidth="1" />
+            <circle cx="593" cy="14" r="2.4" fill="#4a4a55" />
+            <circle cx="593" cy="72" r="2.4" fill="#4a4a55" />
+            {/* upper arm: mount → elbow */}
+            <path d="M572 40 L432 90" stroke="#2e2e36" strokeWidth="11" strokeLinecap="round" />
+            <path d="M568 48 L438 96" stroke="#45454f" strokeWidth="2" strokeDasharray="5 4" opacity="0.7" />
+            <circle cx="572" cy="40" r="9" fill="#3a3a44" stroke="#4a4a55" strokeWidth="1.2" />
+            <circle cx="432" cy="90" r="10" fill="#3a3a44" stroke="#4a4a55" strokeWidth="1.2" />
+            <circle cx="432" cy="90" r="3.2" fill="#1a1a20" />
+            {/* lower arm: elbow → shade pivot */}
+            <path d="M432 90 L306 134" stroke="#2e2e36" strokeWidth="11" strokeLinecap="round" />
+            <path d="M428 98 L312 140" stroke="#45454f" strokeWidth="2" strokeDasharray="5 4" opacity="0.7" />
+            <circle cx="306" cy="134" r="9" fill="#3a3a44" stroke="#4a4a55" strokeWidth="1.2" />
+          </g>
+
+          {/* straight pendant drop — mobile, keeps the hang angle true */}
+          <g className="about-lamp-stem">
+            <rect x="295" y="0" width="10" height="112" fill="url(#lamp-stem-fade)" />
+            <rect x="288" y="102" width="24" height="16" rx="2" fill="#26262e" stroke="#3a3a44" strokeWidth="1" />
+          </g>
+          {/* big industrial shade, mouth aimed straight down the spotlight axis */}
+          <path
+            d="M262 130 L338 130 L364 196 L236 196 Z"
+            fill="#17171d"
+            stroke="#2e2e36"
+            strokeWidth="2"
+          />
+          <path d="M272 138 L328 138 L348 190 L252 190 Z" fill="rgba(var(--accent-rgb), 0.10)" />
+          <rect x="284" y="118" width="32" height="14" rx="2" fill="#26262e" stroke="#3a3a44" strokeWidth="1" />
+          <ellipse className="about-lamp-rim" cx="300" cy="196" rx="64" ry="11" />
+          <ellipse className="about-lamp-bulb" cx="300" cy="196" rx="30" ry="7" />
+        </svg>
+        <div className="about-lamp-glow" />
+        <div className="about-lamp-beam" />
       </div>
     </section>
   );

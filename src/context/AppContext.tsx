@@ -113,7 +113,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     applyAccent(liveries[0].hex);
     const original = document.title;
     const onVis = () => {
-      document.title = document.hidden ? "📻 BOX BOX — come back!" : original;
+      document.title = document.hidden ? "📻 BOX BOX - come back!" : original;
     };
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);

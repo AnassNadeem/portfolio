@@ -27,13 +27,23 @@
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
   /* rhythm */
-  --section-pad: clamp(96px, 12vw, 160px);
+  --section-pad: clamp(64px, 7vw, 104px);
   --container: 1200px;
   --nav-h: 72px;
   --radius: 10px;
+  /* shared About lamp ↔ Garage spotlight axis (viewport %) —
+     the lamp clamps to the right edge, so the bulb hangs right of center */
+  --spot-x: 70%;
 
   /* racing geometry */
   --skew: -8deg;
+}
+
+@media (max-width: 640px) {
+  :root {
+    /* pull the axis in so the lamp keeps presence on small screens */
+    --spot-x: 62%;
+  }
 }
 
 *,
@@ -206,7 +216,7 @@ html.has-cursor select {
 
 .sec-head {
   position: relative;
-  margin-bottom: clamp(48px, 6vw, 80px);
+  margin-bottom: clamp(28px, 3.5vw, 48px);
 }
 
 .sec-head .eyebrow {
@@ -473,9 +483,7 @@ html.overdrive .mq-track {
   .podium,
   .tour,
   .overdrive-fx,
-  .footer-checker,
-  .season-tel-dot,
-  .tel-live {
+  .footer-checker {
     display: none !important;
   }
   * {

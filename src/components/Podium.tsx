@@ -100,6 +100,17 @@ export default function Podium() {
               >
                 <span>Join Leaderboard</span>
               </button>
+              <button
+                className="btn btn--ghost"
+                onClick={() => {
+                  close();
+                  setGamesOpen(true);
+                }}
+                data-cursor="link"
+              >
+                <span>Arcade</span>
+                <span className="arrow">▸</span>
+              </button>
             </div>
           </motion.div>
         </motion.div>

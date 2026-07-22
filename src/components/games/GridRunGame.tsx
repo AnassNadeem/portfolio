@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { playShift, playRev } from "../../lib/sound";
 import { fmtMs } from "../../lib/leaderboard";
 import SubmitScore from "../SubmitScore";
@@ -55,10 +55,11 @@ export default function GridRunGame({ soundOn }: { soundOn: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const dimsRef = useRef<Dims>({ w: 340, h: 480 });
-  const [state, setState] = useState<"idle" | "playing" | "level" | "done" | "crash">("idle");
+  const [state, setState] = useState<"idle" | "playing" | "done" | "crash">("idle");
   const [level, setLevel] = useState(0);
   const [hud, setHud] = useState({ distance: 0, gems: 0, t: 0 });
   const [finalMs, setFinalMs] = useState(0);
+  const [flashKey, setFlashKey] = useState(0);
   const gameRef = useRef({
     lane: 1,
     px: laneX(1, 340),
@@ -74,6 +75,7 @@ export default function GridRunGame({ soundOn }: { soundOn: boolean }) {
     speed: LEVELS[0].speed,
     spawn: LEVELS[0].spawn,
     slow: 0, // seconds of oil-slick slowdown remaining
+    grace: 0, // seconds of crash-proof buffer after a level change
     shake: 0,
     raf: 0,
     lastT: 0,
@@ -187,6 +189,12 @@ export default function GridRunGame({ soundOn }: { soundOn: boolean }) {
       ctx.fillStyle = `rgba(125,155,255,${Math.min(0.14, g.slow * 0.1)})`;
       ctx.fillRect(0, 0, W, H);
     }
+
+    // crash-proof buffer: dull the scene, fading back in over the last moments
+    if (g.grace > 0) {
+      ctx.fillStyle = `rgba(10,10,12,${0.6 * Math.min(1, g.grace / 0.6)})`;
+      ctx.fillRect(0, 0, W, H);
+    }
   }, []);
 
   const endRun = useCallback((g: typeof gameRef.current, crashed: boolean) => {
@@ -219,37 +227,43 @@ export default function GridRunGame({ soundOn }: { soundOn: boolean }) {
     const { w: W, h: H } = dims;
 
     if (lvl === 0) {
+      // fresh run: reset everything
       g.totalDistance = 0;
       g.totalGems = 0;
+      g.lane = 1;
+      g.px = laneX(1, W);
+      g.vx = 0;
+      g.obstacles = [];
+      g.gemsList = [];
+      g.streaks = Array.from({ length: 10 }, () => ({
+        x: 12 + Math.random() * (W - 24),
+        y: Math.random() * H,
+        len: 20 + Math.random() * 40,
+        spd: 1.6 + Math.random() * 1.2,
+      }));
+      g.slow = 0;
+      g.shake = 0;
+      g.grace = 0;
     } else {
+      // seamless level change: keep car position and traffic, just get harder,
+      // with a 3s crash-proof buffer so the speed jump can't insta-kill you
       g.totalDistance += g.distance;
       g.totalGems += g.gems;
+      g.grace = 3;
     }
-    g.lane = 1;
-    g.px = laneX(1, W);
-    g.vx = 0;
     g.distance = 0;
     g.gems = 0;
     g.elapsed = 0;
     g.spawnAcc = 0;
     g.gemAcc = 0;
-    g.obstacles = [];
-    g.gemsList = [];
-    g.streaks = Array.from({ length: 10 }, () => ({
-      x: 12 + Math.random() * (W - 24),
-      y: Math.random() * H,
-      len: 20 + Math.random() * 40,
-      spd: 1.6 + Math.random() * 1.2,
-    }));
     g.speed = cfg.speed;
     g.spawn = cfg.spawn;
-    g.slow = 0;
-    g.shake = 0;
     g.alive = true;
     g.lastT = performance.now();
     setLevel(lvl);
     setHud({ distance: 0, gems: 0, t: 0 });
     setState("playing");
+    setFlashKey((k) => k + 1); // re-trigger the level-start glow + announce
     if (soundOn) playRev(0.25);
 
     const canvas = canvasRef.current;
@@ -272,6 +286,7 @@ export default function GridRunGame({ soundOn }: { soundOn: boolean }) {
 
       const spd = g.speed * (g.slow > 0 ? 0.55 : 1);
       if (g.slow > 0) g.slow = Math.max(0, g.slow - dt);
+      if (g.grace > 0) g.grace = Math.max(0, g.grace - dt);
       g.shake = Math.max(0, g.shake - dt * 3);
       g.elapsed += dt;
       g.distance += spd * dt * 0.14; // cosmetic metres
@@ -327,6 +342,9 @@ export default function GridRunGame({ soundOn }: { soundOn: boolean }) {
             g.slow = 1.4;
             g.shake = 0.5;
             o.y = Hn + 100;
+          } else if (g.grace > 0) {
+            // crash-proof buffer after a level change: ghost through it
+            o.y = Hn + 100;
           } else {
             g.shake = 1;
             draw(ctx, g, dimsNow);
@@ -355,13 +373,13 @@ export default function GridRunGame({ soundOn }: { soundOn: boolean }) {
         });
       }
 
-      // sector complete when the clock runs out
+      // sector complete when the clock runs out — roll straight into the next
       if (g.elapsed >= cfg.dur) {
         g.alive = false;
         cancelAnimationFrame(g.raf);
         if (soundOn) playShift(0.3);
         if (lvl < LEVELS.length - 1) {
-          setState("level");
+          startLevel(lvl + 1);
         } else {
           g.totalDistance += g.distance;
           g.totalGems += g.gems;
@@ -462,50 +480,65 @@ export default function GridRunGame({ soundOn }: { soundOn: boolean }) {
     g.lane = Math.max(0, Math.min(LANES - 1, g.lane + dir));
   };
 
-  const totalRun = LEVELS.reduce((s, l) => s + l.dur, 0);
+  // ── sector tracker: 0 ── 1 ── 2 ── 3 ── 4 ── 🏆 ─────────────────────────
+  // node i is level i; the link after it fills as you race that level
+  const nodeState = (i: number): "done" | "active" | "todo" => {
+    if (state === "done") return "done";
+    if (i < level) return "done";
+    if (i === level) return state === "playing" || state === "crash" ? "active" : "todo";
+    return "todo";
+  };
+  const linkFill = (i: number): number => {
+    if (state === "done") return 1;
+    if (i < level) return 1;
+    if (i === level && (state === "playing" || state === "crash")) return hud.t;
+    return 0;
+  };
 
   return (
     <div className="gridrun">
-      {state === "playing" && (
-        <div className="gridrun-hud mono">
-          <span className="gridrun-hud-lvl">
-            S{level + 1} · {LEVELS[level].label}
-          </span>
-          <span>{hud.distance}m</span>
-          <span className="gridrun-hud-gems">◆ {hud.gems}</span>
-        </div>
-      )}
-      {state === "playing" && (
-        <div className="gridrun-progress" aria-hidden="true">
-          <div className="gridrun-progress-fill" style={{ width: `${hud.t * 100}%` }} />
-        </div>
-      )}
-
       <div ref={stageRef} className="gridrun-stage">
         <canvas ref={canvasRef} className="gridrun-canvas" aria-label="Grid Run game" />
+
+        {state === "playing" && (
+          <div className="gridrun-track mono" aria-label="Sector progress">
+            {LEVELS.map((cfg, i) => (
+              <Fragment key={cfg.label}>
+                <div className={`gridrun-node gridrun-node--${nodeState(i)}`}>
+                  <span className="gridrun-node-num">{nodeState(i) === "done" ? "✓" : i}</span>
+                </div>
+                <div className="gridrun-link">
+                  <div className="gridrun-link-fill" style={{ transform: `scaleX(${linkFill(i)})` }} />
+                </div>
+              </Fragment>
+            ))}
+            <div className="gridrun-node gridrun-node--trophy">
+              <span className="gridrun-node-num">🏆</span>
+            </div>
+          </div>
+        )}
+
+        {state === "playing" && (
+          <div className="gridrun-hud mono">
+            <span>{hud.distance}m</span>
+            <span className="gridrun-hud-gems">◆ {hud.gems}</span>
+          </div>
+        )}
+
+        {state === "playing" && flashKey > 0 && (
+          <div key={flashKey} className="gridrun-flash" aria-hidden="true">
+            <span className="gridrun-flash-label display">LEVEL {level}</span>
+          </div>
+        )}
 
         {state === "idle" && (
           <div className="gridrun-overlay">
             <p className="gc-copy display gridrun-title">GRID RUN</p>
             <p className="gc-copy">
-              Five timed sectors, ~{Math.round(totalRun / 60)} min flat out. Dodge barriers &amp; rivals,
-              oil costs you speed, gems are +80. Arrow keys, scroll wheel, swipe, or the buttons below.
+              Five sectors. Dodge barriers and rivals. Oil slows you, gems are +80.
             </p>
             <button className="btn" type="button" onClick={() => startLevel(0)} data-cursor="link">
-              <span>Lights Out — GO</span>
-            </button>
-          </div>
-        )}
-
-        {state === "level" && (
-          <div className="gridrun-overlay">
-            <p className="gc-copy display gridrun-title">SECTOR {level + 1} CLEAR ✓</p>
-            <p className="gc-copy mono gridrun-splits">
-              {Math.floor(gameRef.current.totalDistance + gameRef.current.distance)}m ·
-              ◆ {gameRef.current.totalGems + gameRef.current.gems} · NEXT: {LEVELS[level + 1].label} ({LEVELS[level + 1].dur}s)
-            </p>
-            <button className="btn" type="button" onClick={() => startLevel(level + 1)} data-cursor="link">
-              <span>Sector {level + 2} ▸</span>
+              <span>Lights Out</span>
             </button>
           </div>
         )}

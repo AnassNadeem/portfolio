@@ -6,7 +6,7 @@ import F1Car from "./F1Car";
 
 /** TV crane shot ⇄ onboard halo cam (toggled from HUD / palette / cheat) */
 function CameraRig({ mode }: { mode: "tv" | "onboard" }) {
-  useFrame(({ camera, pointer, clock }) => {
+  useFrame(({ camera, pointer, clock, size }) => {
     if (mode === "onboard") {
       const sway = Math.sin(clock.elapsedTime * 18) * 0.012;
       camera.position.x += (0.18 - camera.position.x) * 0.08;
@@ -14,10 +14,14 @@ function CameraRig({ mode }: { mode: "tv" | "onboard" }) {
       camera.position.z += (0 + pointer.x * 0.1 - camera.position.z) * 0.08;
       camera.lookAt(8, 0.55 - pointer.y * 0.4, pointer.x * 2.2);
     } else {
-      camera.position.x += (4.6 + pointer.x * 0.6 - camera.position.x) * 0.04;
-      camera.position.y += (1.75 - pointer.y * 0.32 - camera.position.y) * 0.04;
-      camera.position.z += (6.9 - camera.position.z) * 0.04;
-      camera.lookAt(0.25, 0.5, 0);
+      // portrait phones: pull the crane shot back and aim higher so the whole
+      // car fits in frame and settles into the lower half, under the title
+      const aspect = size.width / size.height;
+      const zoom = aspect < 1 ? Math.min(1.7, 0.55 + 0.45 / aspect) : 1;
+      camera.position.x += (4.6 * zoom + pointer.x * 0.6 - camera.position.x) * 0.04;
+      camera.position.y += (1.75 + (zoom - 1) * 0.9 - pointer.y * 0.32 - camera.position.y) * 0.04;
+      camera.position.z += (6.9 * zoom - camera.position.z) * 0.04;
+      camera.lookAt(0.25, 0.5 + (zoom - 1) * 1.5, 0);
     }
   });
   return null;

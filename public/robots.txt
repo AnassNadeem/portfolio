@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://yourdomain.com/sitemap.xml
+# Domain is replaced at build time from VITE_SITE_URL (see vite.config.ts).
+Sitemap: https://anasnadeem.dev/sitemap.xml

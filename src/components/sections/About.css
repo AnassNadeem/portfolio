@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: 420px 1fr;
   gap: clamp(40px, 6vw, 96px);
-  align-items: start;
+  align-items: stretch;
 }
 
 .card-perspective {
@@ -119,187 +119,269 @@
   fill: var(--text-dim);
 }
 
-.driver-card-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+.driver-card-langs {
   border-top: 1px solid var(--line);
   padding-top: 18px;
-  gap: 10px;
-}
-
-.driver-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.driver-stat-val {
-  font-size: 30px;
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 0.14em;
   color: var(--text);
 }
 
-.driver-stat .mono {
-  font-size: 8.5px;
-  color: var(--text-faint);
-}
-
 /* ── copy column ── */
-.about-copy p {
+.about-copy > p {
   color: var(--text-dim);
   font-size: 17.5px;
+  line-height: 1.65;
   margin-bottom: 22px;
   max-width: 60ch;
 }
 
-.about-copy p::first-letter {
+.about-copy > p::first-letter {
   color: var(--text);
 }
 
-.about-values {
-  list-style: none;
-  margin: 34px 0 40px;
-  padding: 0;
+.about-radio {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+  max-width: 60ch;
+}
+
+.about-radio-eyebrow {
   display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.about-values li {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.about-value-flag {
-  flex-shrink: 0;
-  width: 14px;
-  height: 14px;
-  margin-top: 5px;
-  background:
-    conic-gradient(var(--accent) 0 25%, transparent 0 50%, var(--accent) 0 75%, transparent 0)
-    0 0 / 14px 14px;
-  outline: 1px solid var(--line);
-}
-
-.about-values strong {
-  display: block;
-  color: var(--text);
-  font-size: 11px;
-  margin-bottom: 3px;
-}
-
-.about-values span:not(.mono) {
+  align-items: center;
+  gap: 14px;
   color: var(--text-dim);
-  font-size: 15.5px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  margin-bottom: 18px;
+}
+
+.about-radio-eyebrow .slash {
+  width: 22px;
+  height: 10px;
+  flex-shrink: 0;
+  background: var(--accent);
+  transform: skewX(var(--skew));
+}
+
+.about-radio-eyebrow .rule {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.about-radio p {
+  color: var(--text-dim);
+  font-size: 16px;
+  line-height: 1.65;
+  margin-bottom: 14px;
+}
+
+.about-radio p:last-child {
+  margin-bottom: 0;
 }
 
 .about-ctas {
   display: flex;
   flex-wrap: wrap;
   gap: 18px;
+  margin-top: 28px;
 }
 
-/* live GitHub season strip */
-.season-tel {
-  margin-bottom: 34px;
-  padding: 16px 18px;
-  background: var(--panel);
-  border: 1px solid var(--line-soft);
-  border-left: 3px solid var(--accent);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+/* ── garage work lamp → garage spotlight bridge ──
+   Shared axis: --spot-x locks lamp bulb + garage cone to the same
+   horizontal point so they stay aligned across viewport widths.
+   The mount hugs the right edge; the element's width is chosen so the
+   SVG's horizontal center (= the bulb) lands exactly on --spot-x. */
+.about {
+  position: relative;
+  overflow: visible;
+  padding-bottom: clamp(150px, 20vw, 280px);
 }
 
-.season-tel-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 9px;
-  color: var(--text-faint);
-  margin-bottom: 12px;
+.about-copy {
+  position: relative;
 }
 
-.season-tel-dot {
-  width: 7px;
-  height: 7px;
+.about-lamp {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  /* right edge at 100%, bulb at 50% of the SVG → width = 2 × (100% − spot-x) */
+  width: calc((100% - var(--spot-x)) * 2);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.about-lamp-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+}
+
+/* pendant drop is a mobile-only treatment */
+.about-lamp-stem {
+  display: none;
+}
+
+.about-lamp-rim {
+  fill: rgba(var(--accent-rgb), 0.55);
+}
+
+.about-lamp-bulb {
+  fill: #fff;
+  opacity: 0.75;
+}
+
+.about-lamp-glow {
+  position: absolute;
+  left: 50%;
+  /* bulb sits at y≈196 of the 210-tall viewBox */
+  top: 93%;
+  width: clamp(90px, 12vw, 180px);
+  height: clamp(90px, 12vw, 180px);
+  transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: #2bd354;
-  box-shadow: 0 0 8px rgba(43, 211, 84, 0.9);
-  animation: tel-live 1.3s ease-in-out infinite;
+  background: radial-gradient(
+    circle,
+    rgba(var(--accent-rgb), 0.6) 0%,
+    rgba(var(--accent-rgb), 0.14) 45%,
+    transparent 70%
+  );
+  filter: blur(6px);
+  z-index: 1;
+  animation: lamp-pulse 3.2s ease-in-out infinite;
 }
 
-.season-tel-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 26px;
-  font-size: 9.5px;
-  color: var(--text-faint);
-}
-
-.season-tel-grid strong {
-  color: var(--text);
-  font-size: 13px;
-  margin-right: 5px;
-}
-
-.season-tel-wait {
-  animation: tel-live 1.6s ease-in-out infinite;
-}
-
-.about-lead {
-  font-size: 18px;
-  line-height: 1.65;
-  color: var(--text);
-  margin-bottom: 16px;
-}
-
-.about-more {
-  display: inline-block;
-  margin-bottom: 20px;
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--accent);
-  font-size: 10px;
-  cursor: pointer;
-}
-
-.about-expanded {
+.about-lamp-beam {
+  position: absolute;
+  left: 50%;
+  top: 91%;
+  /* long + narrow: reaches through the seam into the garage catch-light */
+  width: clamp(260px, 42vw, 620px);
+  height: clamp(240px, 36vw, 480px);
+  transform: translateX(-50%);
+  transform-origin: top center;
+  z-index: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(var(--accent-rgb), 0.32) 0%,
+    rgba(var(--accent-rgb), 0.12) 32%,
+    rgba(var(--accent-rgb), 0.05) 62%,
+    transparent 100%
+  );
+  /* apex matches the bulb width, landing tightened to the car footprint */
+  clip-path: polygon(43% 0, 57% 0, 84% 100%, 16% 100%);
+  pointer-events: none;
+  mix-blend-mode: screen;
   overflow: hidden;
-  margin-bottom: 20px;
 }
 
-.about-expanded p {
-  color: var(--text-dim);
-  margin-bottom: 14px;
-  line-height: 1.65;
+/* dust motes drifting inside the beam (clipped by the beam's cone) */
+.about-lamp-beam::after {
+  content: "";
+  position: absolute;
+  inset: -14% 0;
+  background-image:
+    radial-gradient(2px 2px at 47% 18%, rgba(255, 255, 255, 0.75), transparent 100%),
+    radial-gradient(1.4px 1.4px at 53% 42%, rgba(255, 255, 255, 0.55), transparent 100%),
+    radial-gradient(1.8px 1.8px at 42% 64%, rgba(255, 255, 255, 0.5), transparent 100%),
+    radial-gradient(1.3px 1.3px at 60% 30%, rgba(255, 255, 255, 0.45), transparent 100%),
+    radial-gradient(1.6px 1.6px at 37% 84%, rgba(255, 255, 255, 0.4), transparent 100%),
+    radial-gradient(1.2px 1.2px at 56% 74%, rgba(255, 255, 255, 0.38), transparent 100%);
+  animation: lamp-motes 8s linear infinite;
 }
 
-.about-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 28px;
+@keyframes lamp-pulse {
+  0%, 100% { opacity: 0.72; }
+  50% { opacity: 1; }
 }
 
-.about-chip {
-  padding: 8px 14px;
-  border: 1px solid var(--line);
-  background: var(--panel);
-  font-size: 9px;
-  color: var(--text-dim);
-  transition: border-color 0.2s, color 0.2s;
+@keyframes lamp-motes {
+  0% { transform: translateY(-9%); opacity: 0; }
+  12% { opacity: 0.6; }
+  85% { opacity: 0.6; }
+  100% { transform: translateY(11%); opacity: 0; }
 }
 
-.about-chip:hover {
-  border-color: rgba(var(--accent-rgb), 0.6);
-  color: var(--text);
+/* Narrow screens: the long wall-mounted arm gets compressed into an odd,
+   nearly-flat diagonal, so swap it for a straight pendant drop — the shade
+   hangs plumb on the --spot-x axis and the beam angle always reads true. */
+@media (max-width: 920px) {
+  .about-lamp-arm {
+    display: none;
+  }
+
+  .about-lamp-stem {
+    display: block;
+  }
+
+  .about-lamp {
+    /* keep the shade a sensible size on small screens; the bulb stays
+       centered in the element, so anchor the center to --spot-x directly */
+    width: clamp(240px, calc((100% - var(--spot-x)) * 2), 400px);
+    right: auto;
+    left: var(--spot-x);
+    transform: translateX(-50%);
+  }
+
+  .about-lamp-beam {
+    /* reach through the sector gate and land on the garage catch-light */
+    height: clamp(300px, 52vw, 480px);
+  }
 }
 
 @media (max-width: 1020px) {
   .about-grid {
     grid-template-columns: 1fr;
+    justify-items: center;
   }
-  .driver-card {
+
+  .card-perspective {
+    width: 100%;
     max-width: 460px;
+    margin-inline: auto;
+    display: flex;
+    justify-content: center;
+  }
+
+  .driver-card {
+    width: 100%;
+    max-width: 460px;
+  }
+
+  .about-copy {
+    width: 100%;
+  }
+
+  .about {
+    padding-bottom: clamp(120px, 24vw, 220px);
+  }
+}
+
+@media (max-width: 640px) {
+  .card-perspective,
+  .driver-card {
+    max-width: min(100%, 420px);
+  }
+
+  .about {
+    padding-bottom: clamp(110px, 30vw, 180px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-lamp-glow,
+  .about-lamp-beam::after {
+    animation: none;
+  }
+  .about-lamp-beam::after {
+    opacity: 0.3;
   }
 }

@@ -66,9 +66,7 @@ export default function Skills() {
           {/* live channel readouts */}
           <div className="tel-panel">
             <div className="tel-head mono">
-              <span>
-                <span className="tel-live" aria-hidden="true" /> LIVE — CORE SYSTEMS
-              </span>
+              <span>CORE SYSTEMS</span>
               <span>CAR {driver.number}</span>
             </div>
             {coreSkills.map((s) => (
@@ -80,7 +78,6 @@ export default function Skills() {
                 <span className="tel-val mono">00</span>
               </div>
             ))}
-            <p className="tel-note mono">FULL SPEC SHEET IN THE RESUME ↗</p>
           </div>
 
           {/* pit-board chips */}

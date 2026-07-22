@@ -1,5 +1,25 @@
 .garage {
   padding-block: 0;
+  position: relative;
+}
+
+.garage::before {
+  /* catch-light locked to the same --spot-x as the about lamp —
+     kept narrow so it reads as the lamp's shaft, not a room wash */
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--spot-x);
+  transform: translateX(-50%);
+  width: clamp(150px, 20vw, 300px);
+  height: clamp(140px, 24vh, 260px);
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 52% 100% at 50% 0%,
+    rgba(var(--accent-rgb), 0.15),
+    transparent 68%
+  );
 }
 
 .garage-stage {
@@ -40,36 +60,6 @@
   color: var(--text);
 }
 
-/* ── laser scan reveal ── */
-.garage-boot {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.garage-beam {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: -8%;
-  height: 4px;
-  opacity: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(var(--accent-rgb), 0.85) 28%,
-    #fff 50%,
-    rgba(var(--accent-rgb), 0.85) 72%,
-    transparent
-  );
-  box-shadow:
-    0 0 34px 8px rgba(var(--accent-rgb), 0.55),
-    0 0 80px 20px rgba(var(--accent-rgb), 0.15);
-  will-change: top, opacity;
-}
-
 .garage-head {
   position: absolute;
   top: calc(var(--nav-h) + 22px);
@@ -96,13 +86,6 @@
 
 .garage-title {
   font-size: clamp(34px, 4.6vw, 58px);
-  margin-bottom: 12px;
-}
-
-.garage-sub {
-  color: var(--text-dim);
-  font-size: 16px;
-  max-width: 40ch;
 }
 
 /* ── floating part labels (drei Html) ── */
@@ -123,15 +106,6 @@
 .garage-label.is-active {
   border-color: rgba(var(--accent-rgb), 0.7);
   background: rgba(var(--accent-rgb), 0.12);
-}
-
-.garage-label-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 9px rgba(var(--accent-rgb), 0.9);
-  flex-shrink: 0;
 }
 
 .garage-label-text {
@@ -180,21 +154,6 @@
   margin-bottom: 14px;
 }
 
-.garage-panel-live {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #2bd354;
-  box-shadow: 0 0 8px rgba(43, 211, 84, 0.9);
-  animation: garage-live 1.3s ease-in-out infinite;
-}
-
-@keyframes garage-live {
-  50% {
-    opacity: 0.3;
-  }
-}
-
 .garage-part {
   font-size: 26px;
   margin-bottom: 6px;
@@ -218,34 +177,25 @@
   gap: 8px;
 }
 
-.garage-hint {
-  position: absolute;
-  left: 50%;
-  bottom: 22px;
-  transform: translateX(-50%);
-  z-index: 2;
-  font-size: 9px;
-  color: var(--text-faint);
-  letter-spacing: 0.2em;
-}
-
-/* the reveal is a scroll-scrubbed desktop moment — never block content elsewhere */
-@media (max-width: 860px), (prefers-reduced-motion: reduce) {
-  .garage-boot {
-    display: none;
-  }
-}
-
 @media (max-width: 860px) {
   .garage-stage {
-    height: auto;
+    /* one full viewport, pinned while the car explodes */
+    height: 100svh;
     min-height: 0;
-    padding-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 16px;
   }
   .garage-canvas {
     position: relative;
-    height: 56vh;
-    min-height: 380px;
+    flex: 1;
+    min-height: 240px;
+    height: auto;
+  }
+  .garage-controls {
+    /* canvas flows below the heading here — anchor to its top edge */
+    top: 12px;
+    right: clamp(12px, 4vw, 32px);
   }
   .garage-head {
     position: relative;
@@ -259,8 +209,9 @@
     bottom: auto;
     width: auto;
     margin: 14px clamp(20px, 6vw, 40px) 0;
-  }
-  .garage-hint {
-    display: none;
+    /* fixed height so swapping spec content never resizes the canvas above */
+    height: min(232px, 34svh);
+    overflow-y: auto;
+    flex: none;
   }
 }

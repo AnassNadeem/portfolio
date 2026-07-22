@@ -52,10 +52,10 @@ function PartLabel({
         ref={ref}
         className={`garage-label ${active ? "is-active" : ""}`}
         onClick={onPick}
+        onPointerEnter={onPick}
         style={{ opacity: 0 }}
         data-cursor="link"
       >
-        <span className="garage-label-dot" />
         <span className="garage-label-text">
           <strong>{text}</strong>
           <em>{domain}</em>
@@ -225,34 +225,171 @@ function FloorDecal() {
   );
 }
 
-/** Soft visible light cone over the turntable */
-function LightCone({ accent }: { accent: string }) {
+/** Straight cylinder strut between two world-space points — the lamp arm. */
+function Strut({
+  from,
+  to,
+  radius = 0.09,
+}: {
+  from: [number, number, number];
+  to: [number, number, number];
+  radius?: number;
+}) {
+  const { pos, quat, len } = useMemo(() => {
+    const a = new THREE.Vector3(...from);
+    const b = new THREE.Vector3(...to);
+    const d = b.clone().sub(a);
+    const len = d.length();
+    const quat = new THREE.Quaternion().setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0),
+      d.normalize()
+    );
+    return { pos: a.clone().lerp(b, 0.5), quat, len };
+  }, [from, to]);
+  return (
+    <mesh position={pos} quaternion={quat}>
+      <cylinderGeometry args={[radius, radius, len, 12]} />
+      <meshStandardMaterial color="#1e1e25" metalness={0.7} roughness={0.35} />
+    </mesh>
+  );
+}
+
+/* Lamp rig geometry — mirrors the 2D About lamp: clamp on the RIGHT wall,
+ * two-segment arm reaching in, shade hanging upper-right of the car with the
+ * cone aimed at the turntable center. (+x/−z ≈ viewport-right for the
+ * default camera, so the rig reads as mounted off the right edge.) */
+const LAMP_MOUNT: [number, number, number] = [13.3, 9.3, -2.1];
+const LAMP_ELBOW: [number, number, number] = [9.2, 8.8, -2.2];
+const LAMP_BULB: [number, number, number] = [4.6, 7.0, -2.4];
+const LAMP_TARGET: [number, number, number] = [0, 0.15, 0];
+
+/** Focused work-lamp spotlight — emits from the right-mounted shade and lands
+ *  as a tight pool on the car footprint only (no room-wide wash). */
+function LightCone({ accent, reduced }: { accent: string; reduced: boolean }) {
+  const { quat, height } = useMemo(() => {
+    const a = new THREE.Vector3(...LAMP_BULB);
+    const b = new THREE.Vector3(...LAMP_TARGET);
+    const d = b.clone().sub(a);
+    return {
+      height: d.length(),
+      quat: new THREE.Quaternion().setFromUnitVectors(
+        new THREE.Vector3(0, -1, 0),
+        d.clone().normalize()
+      ),
+    };
+  }, []);
+
+  const spotTarget = useMemo(() => {
+    const o = new THREE.Object3D();
+    o.position.set(...LAMP_TARGET);
+    return o;
+  }, []);
+
+  const bulbMat = useRef<THREE.MeshBasicMaterial>(null);
+  const glowRef = useRef<THREE.PointLight>(null);
+  useFrame(({ clock }) => {
+    if (reduced) return;
+    const p = 0.86 + Math.sin(clock.elapsedTime * 1.7) * 0.14;
+    if (bulbMat.current) bulbMat.current.opacity = 0.5 + 0.3 * p;
+    if (glowRef.current) glowRef.current.intensity = 1.2 * p;
+  });
+
   return (
     <group>
+      {/* right-wall mount plate + articulated arm */}
+      <mesh position={LAMP_MOUNT}>
+        <boxGeometry args={[0.18, 1.15, 0.7]} />
+        <meshStandardMaterial color="#22222a" metalness={0.6} roughness={0.4} />
+      </mesh>
+      <Strut from={LAMP_MOUNT} to={LAMP_ELBOW} />
+      <Strut from={LAMP_ELBOW} to={LAMP_BULB} />
+      <mesh position={LAMP_ELBOW}>
+        <sphereGeometry args={[0.17, 16, 16]} />
+        <meshStandardMaterial color="#2c2c35" metalness={0.7} roughness={0.3} />
+      </mesh>
+
+      {/* shade, bulb face and volumetric cone — all aimed at the car */}
+      <group position={LAMP_BULB} quaternion={quat}>
+        <mesh position={[0, 0.3, 0]}>
+          <cylinderGeometry args={[0.32, 0.95, 1.05, 24]} />
+          <meshStandardMaterial
+            color="#16161c"
+            metalness={0.7}
+            roughness={0.4}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+        <mesh position={[0, -0.24, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[0.78, 24]} />
+          <meshBasicMaterial ref={bulbMat} color={accent} transparent opacity={0.75} />
+        </mesh>
+        {/* soft outer cone + brighter core = volumetric beam onto the car only */}
+        <mesh position={[0, -height / 2, 0]}>
+          <coneGeometry args={[2.05, height, 40, 1, true]} />
+          <meshBasicMaterial
+            color={accent}
+            transparent
+            opacity={0.05}
+            side={THREE.DoubleSide}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+        <mesh position={[0, -height / 2, 0]}>
+          <coneGeometry args={[1.15, height, 32, 1, true]} />
+          <meshBasicMaterial
+            color={accent}
+            transparent
+            opacity={0.075}
+            side={THREE.DoubleSide}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+        <pointLight
+          ref={glowRef}
+          position={[0, -0.4, 0]}
+          intensity={1.2}
+          color={accent}
+          distance={5}
+          decay={2}
+        />
+      </group>
+
+      {/* tight white key light — angle sized to the car footprint, not the room */}
+      <primitive object={spotTarget} />
       <spotLight
-        position={[0, 8.5, 0]}
-        angle={0.62}
-        penumbra={0.5}
-        intensity={3.4}
+        position={LAMP_BULB}
+        target={spotTarget}
+        angle={0.3}
+        penumbra={0.55}
+        intensity={4.2}
         color="#ffffff"
+        distance={15}
         decay={0}
         castShadow={false}
       />
-      <mesh position={[0, 4.2, 0]}>
-        <coneGeometry args={[4.4, 8.6, 40, 1, true]} />
+
+      {/* landing pool, tight under the car (turntable disc is r=4.1) */}
+      <mesh position={[0, 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[2.05, 40]} />
         <meshBasicMaterial
           color={accent}
           transparent
-          opacity={0.028}
-          side={THREE.DoubleSide}
+          opacity={0.05}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
         />
       </mesh>
-      {/* lamp housing */}
-      <mesh position={[0, 8.4, 0]}>
-        <cylinderGeometry args={[0.5, 0.7, 0.4, 20]} />
-        <meshStandardMaterial color="#16161c" metalness={0.7} roughness={0.4} />
+      <mesh position={[0, 0.065, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[1.2, 32]} />
+        <meshBasicMaterial
+          color={accent}
+          transparent
+          opacity={0.06}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
       </mesh>
     </group>
   );
@@ -273,7 +410,7 @@ export default function GarageScene({
   autoSpin: boolean;
   manualOrbit: boolean;
 }) {
-  const { accent } = useApp();
+  const { accent, reduced } = useApp();
 
   return (
     <Canvas
@@ -286,17 +423,18 @@ export default function GarageScene({
       }}
     >
       <fog attach="fog" args={["#0a0a0c", 11, 30]} />
-      <ambientLight intensity={0.28} />
-      <directionalLight position={[4, 7, 3]} intensity={1.25} />
-      <pointLight position={[-7, 3, -3]} intensity={1.5} color={accent} decay={0} />
-      <pointLight position={[6, 2, 5]} intensity={0.6} color="#7d9bff" decay={0} />
+      {/* room lights dimmed so the work lamp clearly owns the car */}
+      <ambientLight intensity={0.17} />
+      <directionalLight position={[4, 7, 3]} intensity={0.65} />
+      <pointLight position={[-7, 3, -3]} intensity={0.85} color={accent} decay={0} />
+      <pointLight position={[6, 2, 5]} intensity={0.35} color="#7d9bff" decay={0} />
 
       <Suspense fallback={null}>
         {/* No external HDR preset — CSP-safe; Lightformers only (same as HeroScene) */}
         <Environment resolution={256}>
-          <Lightformer intensity={2.0} position={[0, 5, 0]} rotation={[-Math.PI / 2, 0, 0]} scale={[10, 3, 1]} form="rect" />
-          <Lightformer intensity={0.8} position={[-6, 2, 3]} rotation={[0, Math.PI / 3, 0]} scale={[4, 1.2, 1]} form="rect" />
-          <Lightformer intensity={0.6} position={[6, 2.5, -2]} rotation={[0, -Math.PI / 2.6, 0]} scale={[4, 1, 1]} form="rect" />
+          <Lightformer intensity={1.3} position={[0, 5, 0]} rotation={[-Math.PI / 2, 0, 0]} scale={[10, 3, 1]} form="rect" />
+          <Lightformer intensity={0.6} position={[-6, 2, 3]} rotation={[0, Math.PI / 3, 0]} scale={[4, 1.2, 1]} form="rect" />
+          <Lightformer intensity={0.45} position={[6, 2.5, -2]} rotation={[0, -Math.PI / 2.6, 0]} scale={[4, 1, 1]} form="rect" />
         </Environment>
 
         {/* the rotating exhibit */}
@@ -309,7 +447,7 @@ export default function GarageScene({
         <TireStack position={[7.4, -0.1, -5.6]} count={4} />
         <ToolCabinet position={[-8.4, 0.8, -6.4]} />
         <FloorDecal />
-        <LightCone accent={accent} />
+        <LightCone accent={accent} reduced={reduced} />
 
         {/* concrete floor under everything */}
         <mesh position={[0, -0.105, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>

@@ -44,6 +44,13 @@ const sessionBest: Record<Game, Entry | null> = {
   gridrun: null,
 };
 
+/** Remote board cache — avoids a network round-trip every time RANKS opens. */
+const CACHE_TTL_MS = 60_000;
+const boardCache = new Map<Game, { entries: Entry[]; at: number }>();
+const boardInflight = new Map<Game, Promise<Entry[]>>();
+
+const ALL_GAMES: Game[] = ["reaction", "pitstop", "hotlap", "gridrun"];
+
 export function sanitizeDriverName(raw: string): string {
   return raw.toUpperCase().replace(/[^A-Z0-9·]/g, "").slice(0, 3).padEnd(3, "·");
 }
@@ -76,6 +83,27 @@ export function resetSessionScores(): void {
   sessionBest.pitstop = null;
   sessionBest.hotlap = null;
   sessionBest.gridrun = null;
+  boardCache.clear();
+}
+
+/** Instant board from bots + session scores (no network). */
+export function getLocalBoard(game: Game): Entry[] {
+  const bots: Entry[] = ARCADE_BOTS[game].map((b) => ({ ...b, bot: true }));
+  const mine = sessionBest[game] ? [sessionBest[game] as Entry] : [];
+  const cached = boardCache.get(game)?.entries ?? [];
+  return dedupeByName([...bots, ...cached, ...mine])
+    .sort((a, b) => a.ms - b.ms)
+    .slice(0, 10);
+}
+
+function invalidateBoardCache(game?: Game) {
+  if (game) boardCache.delete(game);
+  else boardCache.clear();
+}
+
+/** Warm the remote cache for all games so RANKS paints without waiting. */
+export function prefetchBoards(): void {
+  for (const g of ALL_GAMES) void getBoard(g);
 }
 
 export function personalBest(game: Game): number | null {
@@ -100,8 +128,7 @@ function dedupeByName(entries: Entry[]): Entry[] {
   return [...best.values()];
 }
 
-export async function getBoard(game: Game): Promise<Entry[]> {
-  const bots: Entry[] = ARCADE_BOTS[game].map((b) => ({ ...b, bot: true }));
+async function fetchRemoteBoard(game: Game): Promise<Entry[]> {
   let remote: Entry[] = [];
 
   if (supabaseReady) {
@@ -148,11 +175,35 @@ export async function getBoard(game: Game): Promise<Entry[]> {
     }
   }
 
-  const mine = sessionBest[game] ? [sessionBest[game] as Entry] : [];
+  return remote;
+}
 
+function mergeBoard(game: Game, remote: Entry[]): Entry[] {
+  const bots: Entry[] = ARCADE_BOTS[game].map((b) => ({ ...b, bot: true }));
+  const mine = sessionBest[game] ? [sessionBest[game] as Entry] : [];
   return dedupeByName([...bots, ...remote, ...mine])
     .sort((a, b) => a.ms - b.ms)
     .slice(0, 10);
+}
+
+export async function getBoard(game: Game): Promise<Entry[]> {
+  const hit = boardCache.get(game);
+  if (hit && Date.now() - hit.at < CACHE_TTL_MS) {
+    return mergeBoard(game, hit.entries);
+  }
+
+  const pending = boardInflight.get(game);
+  if (pending) return pending;
+
+  const request = (async () => {
+    const remote = await fetchRemoteBoard(game);
+    boardCache.set(game, { entries: remote, at: Date.now() });
+    boardInflight.delete(game);
+    return mergeBoard(game, remote);
+  })();
+
+  boardInflight.set(game, request);
+  return request;
 }
 
 async function submitToGlobal(
@@ -244,6 +295,7 @@ export async function submitScore(
     if (!globalResult.savedPermanently && globalResult.error) {
       if (isBest) {
         sessionBest[game] = scored;
+        invalidateBoardCache(game);
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("apex:score-posted", { detail: { game } }));
         }
@@ -254,12 +306,14 @@ export async function submitScore(
 
   if (isBest) {
     sessionBest[game] = scored;
+    invalidateBoardCache(game);
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("apex:score-posted", { detail: { game } }));
     }
   }
 
   if (globalResult?.savedPermanently) {
+    invalidateBoardCache(game);
     return globalResult;
   }
 

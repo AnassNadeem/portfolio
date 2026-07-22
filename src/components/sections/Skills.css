@@ -22,23 +22,6 @@
   margin-bottom: 26px;
 }
 
-.tel-live {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #2bd354;
-  box-shadow: 0 0 8px rgba(43, 211, 84, 0.9);
-  margin-right: 6px;
-  animation: tel-live 1.3s ease-in-out infinite;
-}
-
-@keyframes tel-live {
-  50% {
-    opacity: 0.3;
-  }
-}
-
 .tel-row {
   display: grid;
   grid-template-columns: 150px 1fr 30px;
@@ -84,12 +67,6 @@
   color: var(--accent);
   text-align: right;
   font-variant-numeric: tabular-nums;
-}
-
-.tel-note {
-  margin-top: 26px;
-  font-size: 9px;
-  color: var(--text-faint);
 }
 
 /* ── chip groups ── */

@@ -95,9 +95,16 @@
   flex: 1;
   min-width: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 8px 8px 8px 20px;
+  overflow-y: auto;
+  padding: 16px 10px 16px 20px;
+}
+
+/* margin:auto centers the form when it fits and keeps the top reachable
+   when it overflows and scrolls */
+.gridrun-results-right .gc-submit {
+  margin: auto 0;
 }
 
 @media (max-width: 640px) {
@@ -116,7 +123,7 @@
   }
 
   .gridrun-results-right {
-    padding: 0;
+    padding: 4px 0 14px;
     width: 100%;
   }
 }
@@ -132,37 +139,171 @@
 }
 
 .gridrun-hud {
+  position: absolute;
+  top: 48px;
+  left: 14px;
+  right: 14px;
+  z-index: 3;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
-  flex-shrink: 0;
   font-size: 10px;
   color: var(--text-dim);
-}
-
-.gridrun-hud-lvl {
-  color: var(--accent);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
 }
 
 .gridrun-hud-gems {
   color: #c77dff;
 }
 
-.gridrun-progress {
-  width: 100%;
-  flex-shrink: 0;
-  height: 3px;
-  background: rgba(245, 245, 247, 0.08);
-  overflow: hidden;
+/* ── sector tracker overlaid on top of the game: 1 ── 2 ── 3 ── 🏆 ─────── */
+.gridrun-track {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
 }
 
-.gridrun-progress-fill {
-  height: 100%;
-  background: var(--accent);
-  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.7);
-  transition: width 0.12s linear;
+.gridrun-node {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1.5px solid rgba(245, 245, 247, 0.22);
+  background: #0d0d12;
+  color: var(--text-dim);
+  font-size: 11px;
+  transition: border-color 0.4s, background 0.4s, color 0.4s, box-shadow 0.4s;
 }
+
+.gridrun-node-num {
+  line-height: 1;
+}
+
+.gridrun-node--active {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.55);
+  animation: gridrun-node-pulse 1.6s ease-in-out infinite;
+}
+
+.gridrun-node--done {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #0a0a0c;
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.4);
+}
+
+.gridrun-node--trophy {
+  width: 30px;
+  height: 30px;
+  font-size: 13px;
+}
+
+.gridrun-node--trophy .gridrun-node-num {
+  filter: grayscale(1) opacity(0.45);
+  transition: filter 0.5s;
+}
+
+.gridrun-link {
+  flex: 1;
+  height: 3px;
+  min-width: 8px;
+  background: rgba(245, 245, 247, 0.1);
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.gridrun-link-fill {
+  width: 100%;
+  height: 100%;
+  transform-origin: left;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.7);
+  transition: transform 0.15s linear;
+}
+
+@keyframes gridrun-node-pulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.35); }
+  50% { box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.8); }
+}
+
+@media (max-width: 480px) {
+  .gridrun-track {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+  }
+
+  .gridrun-node {
+    width: 20px;
+    height: 20px;
+    font-size: 9px;
+  }
+
+  .gridrun-node--trophy {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+
+  .gridrun-link {
+    min-width: 5px;
+  }
+
+  .gridrun-hud {
+    top: 38px;
+    left: 10px;
+    right: 10px;
+  }
+}
+
+/* ── level-start glow flash ─────────────────────────────────────────────── */
+.gridrun-flash {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  animation: gridrun-flash-glow 1.5s ease-out forwards;
+}
+
+.gridrun-flash-label {
+  font-size: clamp(26px, 6vw, 40px);
+  letter-spacing: 0.06em;
+  color: var(--text);
+  text-shadow: 0 0 24px rgba(var(--accent-rgb), 0.9);
+  animation: gridrun-flash-label 1.5s ease-out forwards;
+}
+
+@keyframes gridrun-flash-glow {
+  0% {
+    background: rgba(var(--accent-rgb), 0.22);
+    box-shadow: inset 0 0 60px rgba(var(--accent-rgb), 0.85);
+  }
+  100% {
+    background: rgba(var(--accent-rgb), 0);
+    box-shadow: inset 0 0 0 rgba(var(--accent-rgb), 0);
+  }
+}
+
+@keyframes gridrun-flash-label {
+  0% { opacity: 0; transform: scale(1.35); }
+  18% { opacity: 1; transform: scale(1); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: scale(0.96); }
+}
+
 
 .gridrun-again {
   margin-top: 2px;

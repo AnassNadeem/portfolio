@@ -1,0 +1,314 @@
+/* ════════════════════════════════════════════════════════════════════════
+   SECTION BRIDGE — "sector gate" seams between sections.
+   Two carbon chevron slabs slide apart on scroll, gate lights arm,
+   a light streak sweeps through. Variants add one accent layer each.
+   ════════════════════════════════════════════════════════════════════════ */
+
+.bridge {
+  position: relative;
+  height: clamp(96px, 15vh, 150px);
+  overflow: hidden;
+  border-block: 1px solid var(--line-soft);
+  background: linear-gradient(180deg, rgba(10, 10, 12, 0.55), var(--bg-2) 50%, rgba(10, 10, 12, 0.55));
+  pointer-events: none;
+  z-index: 1;
+}
+
+.bridge-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* ── gate slabs ── */
+.bridge-slab {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 56%;
+  z-index: 3;
+  background:
+    repeating-linear-gradient(
+      100deg,
+      rgba(255, 255, 255, 0.02) 0 2px,
+      transparent 2px 28px
+    ),
+    linear-gradient(180deg, #101015, #0d0d11);
+  will-change: transform;
+}
+
+.bridge-slab--l {
+  left: -1%;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 36px) 50%, 100% 100%, 0 100%);
+}
+
+.bridge-slab--r {
+  right: -1%;
+  clip-path: polygon(36px 50%, 0 0, 100% 0, 100% 100%, 0 100%);
+}
+
+/* accent chevron edge on the inner lip of each slab */
+.bridge-slab-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 14px;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(var(--accent-rgb), 0.75) 0 9px,
+    transparent 9px 18px
+  );
+  opacity: 0.8;
+}
+
+.bridge-slab--l .bridge-slab-edge {
+  right: 0;
+}
+
+.bridge-slab--r .bridge-slab-edge {
+  left: 0;
+}
+
+/* outgoing / incoming sector numbers stamped on the slabs */
+.bridge-num {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: clamp(52px, 8vw, 104px);
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(245, 245, 247, 0.13);
+  user-select: none;
+}
+
+.bridge-slab--l .bridge-num {
+  right: 14%;
+}
+
+.bridge-slab--r .bridge-num {
+  left: 14%;
+}
+
+/* ── sweeping light streak ── */
+.bridge-streak {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 34%;
+  height: 2px;
+  z-index: 5;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--accent-rgb), 0.9) 55%,
+    #fff 78%,
+    transparent
+  );
+  box-shadow: 0 0 18px 2px rgba(var(--accent-rgb), 0.4);
+  will-change: transform;
+}
+
+/* ── center readout ── */
+.bridge-center {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.bridge-lights {
+  display: flex;
+  gap: 9px;
+}
+
+.bridge-lights i {
+  width: 9px;
+  height: 9px;
+  background: var(--accent);
+  transform: skewX(var(--skew));
+  opacity: 0.16;
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.7);
+}
+
+.bridge-label {
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  color: var(--text-dim);
+  white-space: nowrap;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+.bridge-arrow {
+  color: var(--accent);
+}
+
+/* ═══ variant layers ═══ */
+
+/* beam — carries the About lamp shaft through the seam into the garage */
+.bridge-shaft {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--spot-x);
+  transform: translateX(-50%);
+  width: clamp(110px, 15vw, 210px);
+  z-index: 4;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--accent-rgb), 0.13) 32%,
+    rgba(var(--accent-rgb), 0.13) 68%,
+    transparent
+  );
+  mix-blend-mode: screen;
+}
+
+/* skid — tire rubber laid through the gate */
+.bridge-skid {
+  position: absolute;
+  height: 9px;
+  width: 46%;
+  z-index: 2;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(245, 245, 247, 0.075) 0 15px,
+    rgba(245, 245, 247, 0.015) 15px 24px
+  );
+  border-radius: 3px;
+  mask-image: linear-gradient(90deg, transparent, black 18%, black 82%, transparent);
+}
+
+.bridge-skid--a {
+  top: 27%;
+  left: 4%;
+  transform: rotate(-2.2deg);
+  box-shadow: 0 15px 0 0 rgba(245, 245, 247, 0.045);
+}
+
+.bridge-skid--b {
+  top: 58%;
+  right: 5%;
+  transform: rotate(-1.4deg);
+  box-shadow: 0 15px 0 0 rgba(245, 245, 247, 0.045);
+}
+
+/* telemetry — a speed trace draws itself across the seam */
+.bridge-trace-svg {
+  position: absolute;
+  inset: 22% 0;
+  width: 100%;
+  height: 56%;
+  z-index: 2;
+}
+
+.bridge-trace {
+  fill: none;
+  stroke: rgba(var(--accent-rgb), 0.55);
+  stroke-width: 1.6;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 5px rgba(var(--accent-rgb), 0.5));
+  vector-effect: non-scaling-stroke;
+}
+
+/* scan — data grid + a live vertical scanning line */
+.bridge-ticks {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 46px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 22px);
+  mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+}
+
+.bridge-scanline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  z-index: 4;
+  background: rgba(var(--accent-rgb), 0.65);
+  box-shadow: 0 0 14px 2px rgba(var(--accent-rgb), 0.35);
+  animation: bridge-scan 4.6s linear infinite;
+}
+
+@keyframes bridge-scan {
+  0% { transform: translateX(0); opacity: 0; }
+  6% { opacity: 1; }
+  94% { opacity: 1; }
+  100% { transform: translateX(calc(100vw - 2px)); opacity: 0; }
+}
+
+/* pit — checkered pit-entry strips top and bottom */
+.bridge--pit::before,
+.bridge--pit::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 9px;
+  z-index: 2;
+  background-image: conic-gradient(
+    rgba(245, 245, 247, 0.55) 90deg,
+    transparent 90deg 180deg,
+    rgba(245, 245, 247, 0.55) 180deg 270deg,
+    transparent 270deg
+  );
+  background-size: 18px 18px;
+  opacity: 0.5;
+  mask-image: linear-gradient(90deg, transparent, black 15%, black 85%, transparent);
+}
+
+.bridge--pit::before {
+  top: 0;
+}
+
+.bridge--pit::after {
+  bottom: 0;
+}
+
+/* ── reduced motion: gate rests open, everything readable, nothing moves ── */
+.bridge--static .bridge-slab--l {
+  transform: translateX(-36%);
+}
+
+.bridge--static .bridge-slab--r {
+  transform: translateX(36%);
+}
+
+.bridge--static .bridge-lights i {
+  opacity: 1;
+}
+
+.bridge--static .bridge-streak,
+.bridge--static .bridge-scanline {
+  display: none;
+}
+
+.bridge--static .bridge-trace {
+  stroke-dashoffset: 0;
+}
+
+@media (max-width: 640px) {
+  .bridge {
+    height: clamp(84px, 13vh, 110px);
+  }
+
+  .bridge-label {
+    font-size: 8px;
+    letter-spacing: 0.14em;
+  }
+
+  .bridge-num {
+    font-size: clamp(40px, 12vw, 64px);
+  }
+}

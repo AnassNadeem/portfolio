@@ -13,6 +13,7 @@ declare global {
 type TurnstileOpts = {
   sitekey: string;
   theme?: "light" | "dark" | "auto";
+  action?: string;
   callback: (token: string) => void;
   "error-callback": () => void;
   "expired-callback": () => void;
@@ -35,6 +36,7 @@ export default function TurnstileWidget({ siteKey, onToken, onExpire, resetKey =
     const opts: TurnstileOpts = {
       sitekey: siteKey,
       theme: "dark",
+      action: "turnstile-spin-v2",
       callback: onToken,
       "error-callback": onExpire,
       "expired-callback": onExpire,

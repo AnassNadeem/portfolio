@@ -14,25 +14,6 @@
   margin-bottom: 26px;
 }
 
-.contact-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #555;
-}
-
-.contact-dot.is-live {
-  background: #2bd354;
-  box-shadow: 0 0 12px rgba(43, 211, 84, 0.8);
-  animation: contact-live 1.4s ease-in-out infinite;
-}
-
-@keyframes contact-live {
-  50% {
-    opacity: 0.35;
-  }
-}
-
 .contact-lede {
   color: var(--text-dim);
   font-size: 18px;

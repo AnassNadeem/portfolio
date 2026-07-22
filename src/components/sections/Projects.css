@@ -1,5 +1,5 @@
 .projects {
-  padding-bottom: 0;
+  padding-bottom: var(--section-pad);
 }
 
 .pw-hint {
@@ -8,8 +8,8 @@
   gap: 12px;
   color: var(--text-faint);
   font-size: 10px;
-  margin-top: -24px;
-  margin-bottom: 24px;
+  margin-top: -8px;
+  margin-bottom: 20px;
 }
 
 .pw-hint-drag {
@@ -119,19 +119,6 @@
   border: 1px solid var(--line-soft);
   backdrop-filter: blur(8px);
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
-}
-
-.pw-hud-live {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #2bd354;
-  box-shadow: 0 0 8px rgba(43, 211, 84, 0.9);
-  animation: pw-live 1.3s ease-in-out infinite;
-}
-
-@keyframes pw-live {
-  50% { opacity: 0.3; }
 }
 
 .pw-hud-sep {
