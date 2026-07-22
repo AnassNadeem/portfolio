@@ -63,21 +63,21 @@ export default function Garage() {
         tl.to(explodeRef, { current: 1, duration: 0.35 });
       });
 
+      // mobile: pin as well — the car must fully explode before the
+      // section releases and the page moves on
       mm.add("(max-width: 860px)", () => {
-        gsap.fromTo(
-          explodeRef,
-          { current: 0 },
-          {
-            current: 1,
-            ease: "none",
-            scrollTrigger: {
-              trigger: stageRef.current,
-              start: "top 70%",
-              end: "+=200%",
-              scrub: 1.2,
-            },
-          }
-        );
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: stageRef.current,
+            start: "top top",
+            end: "+=160%",
+            scrub: 1.2,
+            pin: true,
+            anticipatePin: 1,
+          },
+        });
+        tl.fromTo(explodeRef, { current: 0 }, { current: 1, ease: "none", duration: 0.75 });
+        tl.to(explodeRef, { current: 1, duration: 0.25 });
       });
     },
     { scope: rootRef }
