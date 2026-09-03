@@ -122,11 +122,29 @@ export default function ProjectDetailOverlay({
               <button className="pdo-close mono" onClick={onClose} aria-label="Close" data-cursor="link">
                 ✕
               </button>
-              {project.image && (
-                <div className="pdo-cover">
-                  <img src={project.image} alt="" />
-                </div>
-              )}
+              {(() => {
+                const shots = [...(project.detailImages ?? []), project.image].filter(
+                  (src, i, arr): src is string => !!src && arr.indexOf(src) === i
+                );
+                if (!shots.length) return null;
+                const multi = shots.length > 1;
+                return (
+                  <div className={`pdo-gallery${multi ? " pdo-gallery--multi" : ""}`}>
+                    {shots.map((src, i) => (
+                      <div className="pdo-cover" key={src}>
+                        <img
+                          src={src}
+                          alt={
+                            i === shots.length - 1 && project.image === src
+                              ? `${project.name} thumbnail`
+                              : `${project.name} shot ${i + 1}`
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
               <div className="pdo-body">
                 <div className="pdo-meta mono">
                   <span className="text-accent">{project.round}</span>

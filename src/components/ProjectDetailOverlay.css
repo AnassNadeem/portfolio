@@ -13,7 +13,7 @@
 }
 
 .pdo-card-wrap {
-  width: min(560px, 100%);
+  width: min(640px, 100%);
   max-height: calc(100vh - var(--nav-h) - 44px);
   margin: auto 0;
   transform-origin: center center;
@@ -48,6 +48,24 @@
   background: rgba(10, 10, 12, 0.8);
   color: var(--text-dim);
   cursor: pointer;
+}
+
+.pdo-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pdo-gallery--multi .pdo-cover + .pdo-cover {
+  border-top: 1px solid var(--line);
+}
+
+.pdo-gallery--multi .pdo-cover:first-child img {
+  aspect-ratio: 16 / 10;
+}
+
+.pdo-gallery--multi .pdo-cover:not(:first-child) img {
+  aspect-ratio: 16 / 9;
 }
 
 .pdo-cover img {

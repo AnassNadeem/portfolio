@@ -154,10 +154,12 @@ export type Project = {
   live?: string;
   /** Published paper / write-up link — renders a "PAPER ↗" pill when set. */
   paper?: string;
-  /** Cover image shown in the pit-wall monitor. Drop a real file in
-   *  public/projects/ (keep the same name) or point this at any path/URL.
-   *  When omitted, the procedural circuit art is shown instead. */
+  /** Thumbnail on the pit-wall monitor. Drop/replace the file in
+   *  public/projects/ (keep the same filename) or point this at any path/URL. */
   image?: string;
+  /** Extra shots in the click-through detail overlay (shown above the thumbnail).
+   *  Drop/replace files in public/projects/ (e.g. aris-detail.png, aris-detail2.png). */
+  detailImages?: string[];
   trackId: number;
   featured?: boolean;
   status?: string;
@@ -170,26 +172,28 @@ export const projects: Project[] = [
     repo: "AnassNadeem/ARIS",
     year: "2026",
     description:
-      "Always-on Race Intelligence System. ML pipeline that ingests racing telemetry and surfaces strategy signals in real time.",
-    stack: ["Python", "Jupyter", "ML", "Telemetry"],
+      "F1 race-strategy simulator on real 2024–2026 session data. Replay any driver with a live timing tower and track map, then stack ARIS's pit calls against what the teams actually did.",
+    stack: ["Python", "FastAPI", "Next.js", "FastF1", "ML"],
     github: "https://github.com/AnassNadeem/ARIS",
+    live: "https://arisf1.tech",
     image: "/projects/aris.png",
+    detailImages: ["/projects/aris-detail.png", "/projects/aris-detail2.png"],
     trackId: 0,
     featured: true,
     status: "LIVE FEED",
   },
   {
     round: "R2",
-    name: "ApplyPilot",
-    repo: "AnassNadeem/ApplyPilot",
+    name: "Guestay",
     year: "2026",
     description:
-      "AI job-hunting tool. Finds London roles, rewrites your CV to fit each one, and applies for you.",
-    stack: ["TypeScript", "AI Agents", "Automation"],
-    github: "https://github.com/AnassNadeem/ApplyPilot",
-    image: "/projects/applypilot.png",
+      "Direct-booking product for a Lahore coliving house. Guests hold a room, confirm with pay-on-arrival, and manage stays; staff run the house from a Refine admin with full CRM — bookings, refunds, walk-ins, OTA sync.",
+    stack: ["TypeScript", "React", "Refine", "CRM"],
+    live: "https://guestay.pk",
+    image: "/projects/guestay.png",
+    detailImages: ["/projects/guestay-detail.png"],
     trackId: 1,
-    status: "IN PRODUCTION",
+    status: "LIVE",
   },
   {
     round: "R3",
@@ -202,6 +206,7 @@ export const projects: Project[] = [
     github: "https://github.com/AnassNadeem/raez-ecommerce-app",
     live: "https://github.com/AnassNadeem/raez-ecommerce-app/releases/latest",
     image: "/projects/raez.png",
+    detailImages: ["/projects/raez-detail.png"],
     trackId: 2,
     status: "v1 RELEASED",
   },
@@ -216,46 +221,9 @@ export const projects: Project[] = [
     github: "https://github.com/AnassNadeem/BoxBox",
     paper: "https://github.com/AnassNadeem/BoxBox", // TODO: replace with the real published-paper URL
     image: "/projects/boxbox.png",
+    detailImages: ["/projects/boxbox-detail.png"],
     trackId: 5,
     status: "PAPER PUBLISHED",
-  },
-  {
-    round: "R5",
-    name: "This Portfolio",
-    year: "2026",
-    description:
-      "This site. Procedural 3D F1 car, scroll-driven racing line, exploded garage, engine audio, playable arcade.",
-    stack: ["React", "Three.js", "GSAP", "Framer Motion", "Vite"],
-    github: "https://github.com/AnassNadeem",
-    image: "/projects/portfolio.png",
-    trackId: 0,
-    status: "YOU ARE HERE",
-  },
-  {
-    round: "R6",
-    name: "News Sentiment",
-    repo: "AnassNadeem/news-sentiment-reporter",
-    year: "2025",
-    description:
-      "Python NLP pipeline that scrapes RSS headlines, scores sentiment with TextBlob, and writes CSV charts.",
-    stack: ["Python", "TextBlob", "RSS", "Matplotlib"],
-    github: "https://github.com/AnassNadeem/news-sentiment-reporter",
-    image: "/projects/news-sentiment.png",
-    trackId: 3,
-    status: "STABLE",
-  },
-  {
-    round: "R7",
-    name: "Lead Machine",
-    repo: "AnassNadeem/lead-machine-realestate",
-    year: "2026",
-    description:
-      "Real-estate lead gen funnel with a capture pipeline. Freelance client work.",
-    stack: ["HTML/CSS", "JavaScript", "Funnels"],
-    github: "https://github.com/AnassNadeem/lead-machine-realestate",
-    image: "/projects/lead-machine.png",
-    trackId: 4,
-    status: "CLIENT WORK",
   },
 ];
 
