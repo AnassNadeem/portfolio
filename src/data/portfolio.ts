@@ -168,19 +168,18 @@ export type Project = {
 export const projects: Project[] = [
   {
     round: "R1",
-    name: "ARIS",
-    repo: "AnassNadeem/ARIS",
+    name: "BoxBox",
+    repo: "AnassNadeem/BoxBox",
     year: "2026",
     description:
-      "F1 race-strategy simulator on real 2024–2026 session data. Replay any driver with a live timing tower and track map, then stack ARIS's pit calls against what the teams actually did.",
-    stack: ["Python", "FastAPI", "Next.js", "FastF1", "ML"],
-    github: "https://github.com/AnassNadeem/ARIS",
-    live: "https://arisf1.tech",
-    image: "/projects/aris.png",
-    detailImages: ["/projects/aris-detail.png", "/projects/aris-detail2.png"],
-    trackId: 0,
-    featured: true,
-    status: "LIVE FEED",
+      "F1 telemetry build with a published paper on the approach and results.",
+    stack: ["Python", "ML", "Telemetry", "Research"],
+    github: "https://github.com/AnassNadeem/BoxBox",
+    paper: "https://github.com/AnassNadeem/BoxBox", // TODO: replace with the real published-paper URL
+    image: "/projects/boxbox.png",
+    detailImages: ["/projects/boxbox-detail.png"],
+    trackId: 5,
+    status: "PAPER PUBLISHED",
   },
   {
     round: "R2",
@@ -197,6 +196,22 @@ export const projects: Project[] = [
   },
   {
     round: "R3",
+    name: "ARIS",
+    repo: "AnassNadeem/ARIS",
+    year: "2026",
+    description:
+      "F1 race-strategy simulator on real 2024–2026 session data. Replay any driver with a live timing tower and track map, then stack ARIS's pit calls against what the teams actually did.",
+    stack: ["Python", "FastAPI", "Next.js", "FastF1", "ML"],
+    github: "https://github.com/AnassNadeem/ARIS",
+    live: "https://arisf1.tech",
+    image: "/projects/aris.png",
+    detailImages: ["/projects/aris-detail.png", "/projects/aris-detail2.png"],
+    trackId: 0,
+    featured: true,
+    status: "LIVE FEED",
+  },
+  {
+    round: "R4",
     name: "Raez Commerce",
     repo: "AnassNadeem/raez-ecommerce-app",
     year: "2026",
@@ -209,21 +224,6 @@ export const projects: Project[] = [
     detailImages: ["/projects/raez-detail.png"],
     trackId: 2,
     status: "v1 RELEASED",
-  },
-  {
-    round: "R4",
-    name: "BoxBox",
-    repo: "AnassNadeem/BoxBox",
-    year: "2026",
-    description:
-      "F1 telemetry build with a published paper on the approach and results.",
-    stack: ["Python", "ML", "Telemetry", "Research"],
-    github: "https://github.com/AnassNadeem/BoxBox",
-    paper: "https://github.com/AnassNadeem/BoxBox", // TODO: replace with the real published-paper URL
-    image: "/projects/boxbox.png",
-    detailImages: ["/projects/boxbox-detail.png"],
-    trackId: 5,
-    status: "PAPER PUBLISHED",
   },
 ];
 
