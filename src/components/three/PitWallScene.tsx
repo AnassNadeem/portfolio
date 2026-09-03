@@ -11,11 +11,11 @@ import { useApp } from "../../context/AppContext";
  *  like sweeping your eyes across the timing screens.
  *  ──────────────────────────────────────────────────────────────────────── */
 
-const RADIUS = 6.4;
-const COL_STEP = THREE.MathUtils.degToRad(21);
-const ROW_Y = [1.14, -1.14];
-const SCREEN_W = 2.2;
-const SCREEN_H = 1.34;
+const RADIUS = 7.0;
+const COL_STEP = THREE.MathUtils.degToRad(28);
+/** Single row of larger monitors (was 4×2). */
+const SCREEN_W = 2.95;
+const SCREEN_H = 1.8;
 
 export type WallApi = {
   yawTarget: number;
@@ -25,12 +25,11 @@ export type WallApi = {
 /** true while the last pointer gesture was a drag — swallows the trailing click */
 const dragGuard = { active: false };
 
-/** column/row slot for index i (row-major, 4 columns × 2 rows) */
+/** Slot for index i — single curved row of 4 monitors, centered on the chair. */
 function slotFor(i: number): { angle: number; y: number } {
-  const col = i % 4;
-  const row = Math.floor(i / 4);
-  const angle = (col - 1.5) * COL_STEP;
-  return { angle, y: ROW_Y[row] ?? 0 };
+  const n = Math.max(1, projects.length);
+  const angle = (i - (n - 1) / 2) * COL_STEP;
+  return { angle, y: 0 };
 }
 
 /** JetBrains-style label strip under each screen, drawn on canvas */
@@ -66,22 +65,7 @@ function makeLabelTexture(round: string, name: string, status: string): THREE.Ca
   return tex;
 }
 
-/** static-noise texture for the vacant screen */
-function makeStaticTexture(): THREE.CanvasTexture {
-  const c = document.createElement("canvas");
-  c.width = c.height = 256;
-  const x = c.getContext("2d")!;
-  const img = x.createImageData(256, 256);
-  for (let i = 0; i < img.data.length; i += 4) {
-    const v = 14 + Math.random() * 34;
-    img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
-    img.data[i + 3] = 255;
-  }
-  x.putImageData(img, 0, 0);
-  const tex = new THREE.CanvasTexture(c);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  return tex;
-}
+
 
 /** CSP-safe 3D label — canvas texture instead of troika workers (blocked under strict CSP). */
 function makeCanvasTextTexture(
@@ -243,94 +227,11 @@ function Monitor({
   );
 }
 
-/** vacant slot: static noise + "your project here" — links to contact */
-function VacantMonitor({
-  angle,
-  y,
-  accent,
-  scanTex,
-}: {
-  angle: number;
-  y: number;
-  accent: string;
-  scanTex: THREE.CanvasTexture;
-}) {
-  const { scrollTo } = useApp();
-  const staticTex = useMemo(makeStaticTexture, []);
-  const [hovered, setHovered] = useState(false);
-  const pos = useMemo<[number, number, number]>(
-    () => [Math.sin(angle) * RADIUS, y, -Math.cos(angle) * RADIUS],
-    [angle, y]
-  );
-
-  useFrame((state) => {
-    // jitter the noise so it reads as live static
-    staticTex.offset.set(
-      Math.floor(state.clock.elapsedTime * 18 % 4) / 4,
-      Math.floor(state.clock.elapsedTime * 24 % 4) / 4
-    );
-  });
-
-  const vacantTex = useMemo(
-    () =>
-      makeCanvasTextTexture(
-        [
-          { text: "AWAITING SIGNAL", size: 56, color: hovered ? accent : "#9ba1a6", y: 72 },
-          {
-            text: `R${projects.length + 1} — YOUR PROJECT? OPEN THE RADIO ▸`,
-            size: 36,
-            color: "#71767c",
-            y: 184,
-          },
-        ],
-        1024,
-        256
-      ),
-    [hovered, accent]
-  );
-
-  return (
-    <group position={pos} rotation={[Math.atan2(y, RADIUS) * -0.28, -angle, 0]}>
-      <mesh position={[0, -0.06, -0.045]}>
-        <boxGeometry args={[SCREEN_W + 0.14, SCREEN_H + 0.44, 0.08]} />
-        <meshStandardMaterial color="#131318" metalness={0.55} roughness={0.4} />
-      </mesh>
-      <mesh
-        onClick={(e) => {
-          e.stopPropagation();
-          if (dragGuard.active) return;
-          scrollTo("#contact");
-        }}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          setHovered(true);
-          document.body.style.cursor = "pointer";
-        }}
-        onPointerOut={() => {
-          setHovered(false);
-          document.body.style.cursor = "";
-        }}
-      >
-        <planeGeometry args={[SCREEN_W, SCREEN_H]} />
-        <meshBasicMaterial map={staticTex} toneMapped={false} />
-      </mesh>
-      <mesh position={[0, 0, 0.004]} raycast={() => null}>
-        <planeGeometry args={[SCREEN_W, SCREEN_H]} />
-        <meshBasicMaterial map={scanTex} transparent opacity={0.5} depthWrite={false} />
-      </mesh>
-      <mesh position={[0, 0, 0.01]} raycast={() => null}>
-        <planeGeometry args={[SCREEN_W * 0.92, SCREEN_H * 0.55]} />
-        <meshBasicMaterial map={vacantTex} transparent toneMapped={false} depthWrite={false} />
-      </mesh>
-    </group>
-  );
-}
-
 /** decorative arc rails above and below the monitor bank */
 function ArcRails({ accent }: { accent: string }) {
   const rail = useMemo(() => {
     const pts: THREE.Vector3[] = [];
-    const span = COL_STEP * 3 + 0.34;
+    const span = COL_STEP * Math.max(1, projects.length - 1) + 0.5;
     for (let i = 0; i <= 40; i++) {
       const a = -span / 2 + (span * i) / 40;
       pts.push(new THREE.Vector3(Math.sin(a) * (RADIUS + 0.12), 0, -Math.cos(a) * (RADIUS + 0.12)));
@@ -340,10 +241,10 @@ function ArcRails({ accent }: { accent: string }) {
   }, []);
   return (
     <group>
-      <mesh geometry={rail} position={[0, 2.25, 0]}>
+      <mesh geometry={rail} position={[0, SCREEN_H / 2 + 0.55, 0]}>
         <meshBasicMaterial color={accent} transparent opacity={0.5} />
       </mesh>
-      <mesh geometry={rail} position={[0, -2.45, 0]}>
+      <mesh geometry={rail} position={[0, -(SCREEN_H / 2 + 0.7), 0]}>
         <meshBasicMaterial color={accent} transparent opacity={0.24} />
       </mesh>
     </group>
@@ -395,9 +296,10 @@ function PanRig({
   useEffect(() => {
     const cam = camera as THREE.PerspectiveCamera;
     const aspect = size.width / Math.max(1, size.height);
-    cam.fov = aspect < 0.9 ? 62 : aspect < 1.35 ? 52 : 44;
+    cam.fov = aspect < 0.9 ? 58 : aspect < 1.35 ? 48 : 40;
     cam.updateProjectionMatrix();
-    api.current.maxYaw = aspect < 0.9 ? 0.52 : aspect < 1.35 ? 0.34 : 0.2;
+    // 4 large screens span wider — give a bit more pan travel
+    api.current.maxYaw = aspect < 0.9 ? 0.58 : aspect < 1.35 ? 0.38 : 0.22;
   }, [camera, size, api]);
 
   const lastInteract = useRef(0);
@@ -526,12 +428,6 @@ export default function PitWallScene({
               />
             );
           })}
-          {/* the vacant 8th screen — an invitation */}
-          {projects.length < 8 &&
-            (() => {
-              const { angle, y } = slotFor(projects.length);
-              return <VacantMonitor angle={angle} y={y} accent={accent} scanTex={scanTex} />;
-            })()}
           <ArcRails accent={accent} />
         </group>
         {/* room shell — a big cylinder around the chair catches the screen light */}
@@ -553,7 +449,7 @@ export default function PitWallScene({
             font: "'JetBrains Mono', monospace",
           },
         ]}
-        position={[0, -1.9, -3.2]}
+        position={[0, -2.15, -3.2]}
         rotation={[-0.5, 0, 0]}
         plane={[3.2, 0.35]}
       />

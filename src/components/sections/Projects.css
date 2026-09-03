@@ -27,7 +27,7 @@
 /* ── the console ── */
 .pw-wall-stage {
   position: relative;
-  height: min(86vh, 740px);
+  height: min(78vh, 680px);
   margin-inline: clamp(-20px, -3vw, 0);
   border-block: 1px solid var(--line);
   background:
@@ -183,8 +183,8 @@
 /* ── no-WebGL fallback grid ── */
 .pw-fallback-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
   padding-block: 32px;
 }
 
@@ -224,7 +224,7 @@
 
 @media (max-width: 720px) {
   .pw-wall-stage {
-    height: min(72vh, 560px);
+    height: min(58vh, 480px);
   }
   .pw-arrow {
     width: 38px;
@@ -232,5 +232,8 @@
   }
   .pw-hud {
     display: none;
+  }
+  .pw-fallback-grid {
+    grid-template-columns: 1fr;
   }
 }
